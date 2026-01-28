@@ -1,25 +1,89 @@
 # Suite Helmfile
 
-Helmfile to deploy [La Suite numerique](https://github.com/suitenumerique) on Kubernetes with minimal configuration.
+Helmfile to deploy [La Suite numerique](https://github.com/suitenumerique) on Kubernetes.
 
-## Quick Start (Local)
+## Applications
+
+| App | Description | Status |
+|-----|-------------|--------|
+| **Docs** | Collaborative document editing (Google Docs-like) | Implemented |
+| **Meet** | Video conferencing (Google Meet-like) | Implemented |
+| **Drive** | File storage and sharing (Google Drive-like) | Implemented |
+| **Desk** | Directory and team management | Planned |
+| **Conversations** | AI chatbot (requires LLM backend) | Planned |
+
+> **Note**: Desk and Conversations are defined in chart versions but not yet fully integrated.
+
+## Prerequisites
+
+- Kubernetes cluster (Rancher Desktop, Docker Desktop, or other)
+- [Helm](https://helm.sh/) v3.x
+- [Helmfile](https://github.com/helmfile/helmfile) v0.150+
+- `kubectl` configured for your cluster
+
+## Quick Start
+
+### Local Development
 
 ```bash
-./init-local.sh
-# Add the printed line to /etc/hosts
-helmfile -e local sync
+./init.sh
+# Choose option 1 (Local development)
 ```
 
-## What it deploys
+The interactive script will:
+1. Check prerequisites (helm, kubectl, helmfile)
+2. Generate a random secret seed
+3. Show the `/etc/hosts` line to add
+4. Run `helmfile sync` automatically
+5. Extract the CA certificate to `lasuite-ca.pem`
 
-- **Apps**: docs, meet, drive, desk, conversations (configurable)
-- **Infra**: PostgreSQL, Redis, Keycloak, MinIO, HAProxy, cert-manager
+### Remote Deployment
 
-## Environments
+```bash
+./init.sh
+# Choose option 2 (Remote deployment)
+```
 
-- `local`: Self-contained local deployment with self-signed certificates
-- `remote-example`: Template for production (external S3, Let's Encrypt)
+The script will ask for:
+- Environment name (e.g., `production`)
+- Domain (e.g., `suite.example.com`)
+- Admin email (for Let's Encrypt)
+
+It creates the configuration files. Review them before deploying.
+
+## Access (Local)
+
+| Service | URL | Credentials |
+|---------|-----|-------------|
+| Docs | https://docs.suite.local | user / password |
+| Meet | https://meet.suite.local | user / password |
+| Drive | https://drive.suite.local | user / password |
+| Keycloak Admin | https://auth.suite.local | admin / (see below) |
+
+### Trusting the CA Certificate
+
+The init script extracts the CA certificate to `lasuite-ca.pem`. To avoid browser warnings:
+
+**macOS:**
+```bash
+sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain lasuite-ca.pem
+```
+
+**Linux (Debian/Ubuntu):**
+```bash
+sudo cp lasuite-ca.pem /usr/local/share/ca-certificates/lasuite-ca.crt
+sudo update-ca-certificates
+```
+
+**Firefox:** Settings > Privacy & Security > Certificates > View Certificates > Import
+
+### Keycloak Admin Password
+
+```bash
+grep secretSeed conf/local/secrets.conf | cut -d'"' -f2 | xargs -I{} sh -c 'echo -n "{}:keycloak-admin" | shasum -a 256 | cut -c1-50'
+```
 
 ## Documentation
 
-See [CLAUDE.md](CLAUDE.md) for technical details.
+- [Advanced Deployment](docs/advanced-deployment.md) - External PostgreSQL/Keycloak, production setup
+- [Architecture Decisions](docs/decisions.md) - Why things are the way they are

@@ -1,4 +1,0 @@
-issuer: {{ .Values.tls.issuer | quote }}
-{{- if eq .Values.tls.issuer "letsencrypt" }}
-email: {{ .Values.tls.email | quote }}
-{{- end }}

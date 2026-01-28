@@ -19,8 +19,11 @@ postgres:
   port: 5432
 
 keycloak:
-  enabled: true
+  enabled: true           # true = deploy lasuite-keycloak, false = use external
   realm: lasuite
+  # URL overrides (optional when enabled: true, required when enabled: false)
+  externalUrl: ""         # Empty = use auth.{domain}, or set to external URL like https://sso.example.com
+  backendUrl: ""          # Empty = use internal service (or externalUrl if set)
 
 redis:
   enabled: false
@@ -31,7 +34,15 @@ minio:
   enabled: false
 
 s3:
+  provider: aws  # aws | oos | minio
   endpoint: https://s3.eu-west-1.amazonaws.com
+  host: s3.eu-west-1.amazonaws.com
+  port: 443
+  # For OOS (Outscale), use:
+  # provider: oos
+  # endpoint: https://oos.eu-west-2.outscale.com
+  # host: oos.eu-west-2.outscale.com
+  # port: 443
 
 ingress:
   enabled: true

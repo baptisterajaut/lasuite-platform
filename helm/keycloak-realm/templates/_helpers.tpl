@@ -3,7 +3,7 @@ Generate a deterministic secret from seed and client ID
 */}}
 {{- define "deriveSecret" -}}
 {{- $input := printf "%s:%s" .seed .clientId -}}
-{{- $input | sha256sum | trunc 48 -}}
+{{- $input | sha256sum | trunc 50 -}}
 {{- end -}}
 
 {{/*

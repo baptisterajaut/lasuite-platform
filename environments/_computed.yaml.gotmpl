@@ -1,0 +1,77 @@
+# ===========================================
+# COMPUTED VALUES
+# ===========================================
+# This file calculates common values from environment config.
+# Loaded after the main environment file (local.yaml, remote-example.yaml).
+# Apps can reference these via .Values._common.xxx
+
+{{- $keycloak := index .Values "keycloak" | default dict }}
+{{- $postgres := index .Values "postgres" | default dict }}
+{{- $redis := index .Values "redis" | default dict }}
+{{- $s3 := index .Values "s3" | default dict }}
+{{- $ingress := index .Values "ingress" | default dict }}
+{{- $tls := index .Values "tls" | default dict }}
+{{- $domain := index .Values "domain" | default "suite.local" }}
+
+{{- $kcExternalUrl := index $keycloak "externalUrl" | default "" }}
+{{- if eq $kcExternalUrl "" }}
+{{- $kcExternalUrl = printf "https://auth.%s" $domain }}
+{{- end }}
+{{- $kcBackendUrl := index $keycloak "backendUrl" | default "" }}
+{{- if eq $kcBackendUrl "" }}
+{{- if ne (index $keycloak "externalUrl" | default "") "" }}
+{{- $kcBackendUrl = $kcExternalUrl }}
+{{- else }}
+{{- $kcBackendUrl = "http://keycloak-keycloakx-http.lasuite-keycloak.svc.cluster.local" }}
+{{- end }}
+{{- end }}
+{{- $kcRealm := index $keycloak "realm" | default "lasuite" }}
+
+_common:
+  # -------------------------------------------
+  # KEYCLOAK URLS
+  # -------------------------------------------
+  keycloak:
+    externalUrl: {{ $kcExternalUrl }}
+    backendUrl: {{ $kcBackendUrl }}
+    realm: {{ $kcRealm }}
+
+  # -------------------------------------------
+  # SERVICE URLS
+  # -------------------------------------------
+  services:
+    postgres:
+      host: {{ index $postgres "host" | default "lasuite-postgresql.lasuite-postgresql.svc.cluster.local" }}
+      port: {{ index $postgres "port" | default 5432 }}
+    redis:
+      host: {{ index $redis "host" | default "redis-master.lasuite-redis.svc.cluster.local" }}
+      port: {{ index $redis "port" | default 6379 }}
+    s3:
+      provider: {{ index $s3 "provider" | default "minio" }}
+      endpoint: {{ index $s3 "endpoint" | default "http://minio.lasuite-minio.svc.cluster.local:9000" }}
+      host: {{ index $s3 "host" | default "minio.lasuite-minio.svc.cluster.local" }}
+      port: {{ index $s3 "port" | default 9000 }}
+
+  # -------------------------------------------
+  # INGRESS DEFAULTS
+  # -------------------------------------------
+  ingress:
+    className: {{ index $ingress "className" | default "haproxy" | quote }}
+    annotations:
+      cert-manager.io/cluster-issuer: {{ index $tls "issuer" | default "selfsigned" }}
+
+  # -------------------------------------------
+  # OIDC ENDPOINTS (for apps)
+  # -------------------------------------------
+  oidc:
+    # Browser redirects (external)
+    authorizationEndpoint: {{ $kcExternalUrl }}/realms/{{ $kcRealm }}/protocol/openid-connect/auth
+    logoutEndpoint: {{ $kcExternalUrl }}/realms/{{ $kcRealm }}/protocol/openid-connect/logout
+    # Backend-to-backend (internal)
+    jwksEndpoint: {{ $kcBackendUrl }}/realms/{{ $kcRealm }}/protocol/openid-connect/certs
+    tokenEndpoint: {{ $kcBackendUrl }}/realms/{{ $kcRealm }}/protocol/openid-connect/token
+    userEndpoint: {{ $kcBackendUrl }}/realms/{{ $kcRealm }}/protocol/openid-connect/userinfo
+    # Common settings
+    signAlgo: RS256
+    scopes: "openid email"
+    verifySsl: "false"

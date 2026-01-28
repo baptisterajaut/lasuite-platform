@@ -28,3 +28,12 @@ redis:
 s3:
   useExisting: false
   endpoint: http://minio.lasuite-minio.svc.cluster.local:9000
+
+# TLS configuration
+tls:
+  issuer: selfsigned  # selfsigned | letsencrypt
+  email: ""           # Required for letsencrypt
+
+# Ingress configuration
+ingress:
+  className: haproxy

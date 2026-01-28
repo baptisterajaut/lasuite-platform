@@ -1,4 +1,4 @@
-{{- define "secret" -}}{{- $seed := index . 0 -}}{{- $id := index . 1 -}}{{- printf "%s:%s" $seed $id | sha256sum | trunc 48 -}}{{- end -}}
+{{- define "secret" -}}{{- $seed := index . 0 -}}{{- $id := index . 1 -}}{{- printf "%s:%s" $seed $id | sha256sum | trunc 50 -}}{{- end -}}
 auth:
   password: {{ template "secret" (list .Values.secretSeed "redis") }}
 

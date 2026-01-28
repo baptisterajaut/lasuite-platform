@@ -1,4 +1,4 @@
-{{- define "secret" -}}{{- $seed := index . 0 -}}{{- $id := index . 1 -}}{{- printf "%s:%s" $seed $id | sha256sum | trunc 48 -}}{{- end -}}
+{{- define "secret" -}}{{- $seed := index . 0 -}}{{- $id := index . 1 -}}{{- printf "%s:%s" $seed $id | sha256sum | trunc 50 -}}{{- end -}}
 image:
   repository: quay.io/keycloak/keycloak
   tag: "26.5.1"
@@ -10,8 +10,8 @@ command:
 
 database:
   vendor: postgres
-  hostname: lasuite-postgresql.lasuite-postgresql.svc.cluster.local
-  port: 5432
+  hostname: {{ .Values._common.services.postgres.host }}
+  port: {{ .Values._common.services.postgres.port }}
   database: keycloak
   username: keycloak
   password: {{ template "secret" (list .Values.secretSeed "keycloak-db") }}
@@ -25,9 +25,9 @@ proxy:
 
 ingress:
   enabled: true
-  ingressClassName: {{ .Values.ingress.className | quote }}
+  ingressClassName: {{ .Values._common.ingress.className }}
   annotations:
-    cert-manager.io/cluster-issuer: {{ .Values.tls.issuer }}
+{{ .Values._common.ingress.annotations | toYaml | indent 4 }}
   rules:
     - host: auth.{{ .Values.domain }}
       paths:
@@ -44,7 +44,7 @@ extraEnv: |
   - name: KEYCLOAK_ADMIN_PASSWORD
     value: "{{ template "secret" (list .Values.secretSeed "keycloak-admin") }}"
   - name: KC_HOSTNAME
-    value: "https://auth.{{ .Values.domain }}"
+    value: "{{ .Values._common.keycloak.externalUrl }}"
   - name: KC_HOSTNAME_STRICT
     value: "false"
   - name: KC_HOSTNAME_BACKCHANNEL_DYNAMIC

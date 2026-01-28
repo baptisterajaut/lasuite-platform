@@ -32,15 +32,24 @@ apps:
     enabled: {{ .Values.apps.conversations.enabled }}
 
 keycloak:
-  realm: {{ .Values.keycloak.realm | quote }}
+  realm: {{ .Values._common.keycloak.realm | quote }}
 
 postgres:
-  host: {{ .Values.postgres.host | quote }}
-  port: {{ .Values.postgres.port }}
+  host: {{ .Values._common.services.postgres.host | quote }}
+  port: {{ .Values._common.services.postgres.port }}
 
 redis:
-  host: {{ .Values.redis.host | quote }}
-  port: {{ .Values.redis.port }}
+  host: {{ .Values._common.services.redis.host | quote }}
+  port: {{ .Values._common.services.redis.port }}
 
 s3:
-  endpoint: {{ .Values.s3.endpoint | quote }}
+  endpoint: {{ .Values._common.services.s3.endpoint | quote }}
+
+tls:
+  issuer: {{ .Values.tls.issuer | quote }}
+{{- if eq .Values.tls.issuer "letsencrypt" }}
+  email: {{ .Values.adminEmail | quote }}
+{{- end }}
+
+ingress:
+  className: {{ .Values._common.ingress.className }}

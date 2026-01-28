@@ -3,6 +3,7 @@ chartVersions:
   # Bitnami
   postgresql: "18.2.3"
   redis: "24.1.2"
+  # Others
   keycloak: "7.1.7"
   minio: "5.4.0"
 
@@ -11,3 +12,4 @@ chartVersions:
   trustManager: "0.13.0"
   haproxy: "1.47.5"
   reflector: "9.1.45"
+  livekit: "1.9.0"

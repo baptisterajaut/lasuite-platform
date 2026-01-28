@@ -24,6 +24,8 @@ repositories:
     url: https://suitenumerique.github.io/people/
   - name: conversations
     url: https://suitenumerique.github.io/conversations/
+  - name: livekit
+    url: https://helm.livekit.io
 
 # ===========================================
 # HELM DEFAULTS
@@ -44,6 +46,7 @@ environments:
       - versions/lasuite-helm-versions.yaml
       - environments/local.yaml
       - conf/local/secrets.conf
+      - environments/_computed.yaml.gotmpl
     missingFileHandler: Warn
 
   remote-example:
@@ -51,6 +54,7 @@ environments:
       - versions/backend-helm-versions.yaml
       - versions/lasuite-helm-versions.yaml
       - environments/remote-example.yaml
+      - environments/_computed.yaml.gotmpl
     missingFileHandler: Error
 
 ---
@@ -70,21 +74,6 @@ releases:
       category: infrastructure
     values:
       - values/cert-manager.yaml.gotmpl
-
-  # -------------------------------------------
-  # CERTIFICATE ISSUER
-  # -------------------------------------------
-  - name: certificate-issuer
-    namespace: cert-manager
-    chart: ./helm/certificate-issuer
-    {{- if .Values.certManager.enabled }}
-    needs:
-      - cert-manager/cert-manager
-    {{- end }}
-    labels:
-      category: infrastructure
-    values:
-      - values/certificate-issuer.yaml.gotmpl
 
   # -------------------------------------------
   # HAPROXY INGRESS CONTROLLER
@@ -186,7 +175,9 @@ releases:
     namespace: lasuite-config
     chart: ./helm/platform-configuration
     needs:
-      - cert-manager/certificate-issuer
+      {{- if .Values.certManager.enabled }}
+      - cert-manager/cert-manager
+      {{- end }}
       {{- if .Values.reflector.enabled }}
       - reflector/reflector
       {{- end }}
@@ -250,3 +241,49 @@ releases:
       app: drive
     values:
       - values/drive.yaml.gotmpl
+
+  # -------------------------------------------
+  # LIVEKIT (for Meet)
+  # -------------------------------------------
+  - name: livekit
+    namespace: lasuite-livekit
+    chart: livekit/livekit-server
+    version: {{ .Values.chartVersions.livekit | quote }}
+    condition: livekit.enabled
+    needs:
+      - lasuite-config/platform-configuration
+      {{- if .Values.redis.enabled }}
+      - lasuite-redis/redis
+      {{- end }}
+    labels:
+      category: infrastructure
+    values:
+      - values/livekit.yaml.gotmpl
+
+  # -------------------------------------------
+  # MEET
+  # -------------------------------------------
+  - name: meet
+    namespace: lasuite-meet
+    chart: meet/meet
+    version: {{ .Values.chartVersions.meet | quote }}
+    condition: apps.meet.enabled
+    needs:
+      - lasuite-config/platform-configuration
+      {{- if .Values.postgres.enabled }}
+      - lasuite-postgresql/lasuite-postgresql
+      {{- end }}
+      {{- if .Values.redis.enabled }}
+      - lasuite-redis/redis
+      {{- end }}
+      {{- if .Values.keycloak.enabled }}
+      - lasuite-keycloak/keycloak
+      {{- end }}
+      {{- if .Values.livekit.enabled }}
+      - lasuite-livekit/livekit
+      {{- end }}
+    labels:
+      category: business
+      app: meet
+    values:
+      - values/meet.yaml.gotmpl

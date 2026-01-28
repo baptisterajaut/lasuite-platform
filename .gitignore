@@ -1,6 +1,13 @@
 # SOPS keys
 keys/
 
+# Generated CA certificate
+lasuite-ca.pem
+
+# Secrets (keep .example files)
+conf/*/*.conf
+!conf/*/*.conf.example
+
 # Helm charts downloaded
 charts/
 

@@ -1,0 +1,143 @@
+image:
+  repository: lasuite/meet-backend
+  pullPolicy: IfNotPresent
+  tag: latest
+
+# Main Ingress
+ingress:
+  enabled: true
+  className: {{ .Values._common.ingress.className }}
+  host: meet.{{ .Values.domain }}
+  annotations:
+{{ .Values._common.ingress.annotations | toYaml | indent 4 }}
+  tls:
+    enabled: true
+    secretName: meet-tls
+
+# Admin Ingress
+# Note: meet chart has a bug - it merges main ingress TLS into admin ingress
+# Workaround: disable TLS on admin ingress, main ingress TLS covers it
+ingressAdmin:
+  enabled: true
+  className: {{ .Values._common.ingress.className }}
+  host: meet.{{ .Values.domain }}
+  annotations:
+{{ .Values._common.ingress.annotations | toYaml | indent 4 }}
+  tls:
+    enabled: false
+
+# Posthog (disabled for local)
+posthog:
+  ingress:
+    enabled: false
+  ingressAssets:
+    enabled: false
+
+# Backend
+backend:
+  replicas: 1
+  envVars:
+    # Django admin
+    DJANGO_SUPERUSER_EMAIL: {{ .Values.adminEmail }}
+    DJANGO_SUPERUSER_PASSWORD:
+      secretKeyRef:
+        name: meet-secrets
+        key: DJANGO_SUPERUSER_PASSWORD
+    DJANGO_CONFIGURATION: Production
+    DJANGO_SETTINGS_MODULE: meet.settings
+    DJANGO_ALLOWED_HOSTS: meet.{{ .Values.domain }}
+    DJANGO_CSRF_TRUSTED_ORIGINS: https://meet.{{ .Values.domain }}
+    DJANGO_SECRET_KEY:
+      secretKeyRef:
+        name: meet-secrets
+        key: DJANGO_SECRET_KEY
+    # Database
+    DB_HOST: {{ .Values._common.services.postgres.host }}
+    DB_PORT: "{{ .Values._common.services.postgres.port }}"
+    DB_NAME: meet
+    DB_USER: meet
+    DB_PASSWORD:
+      secretKeyRef:
+        name: meet-secrets
+        key: DB_PASSWORD
+    # Redis
+    REDIS_URL:
+      secretKeyRef:
+        name: meet-secrets
+        key: REDIS_URL
+    # LiveKit
+    LIVEKIT_API_KEY:
+      secretKeyRef:
+        name: meet-secrets
+        key: LIVEKIT_API_KEY
+    LIVEKIT_API_SECRET:
+      secretKeyRef:
+        name: meet-secrets
+        key: LIVEKIT_API_SECRET
+    LIVEKIT_API_URL: https://livekit.{{ .Values.domain }}/
+    LIVEKIT_VERIFY_SSL: "false"
+    # Static files
+    STORAGES_STATICFILES_BACKEND: django.contrib.staticfiles.storage.StaticFilesStorage
+    # OIDC - Browser redirects (external)
+    OIDC_OP_AUTHORIZATION_ENDPOINT: {{ .Values._common.oidc.authorizationEndpoint }}
+    OIDC_OP_LOGOUT_ENDPOINT: {{ .Values._common.oidc.logoutEndpoint }}
+    # OIDC - Backend-to-backend (internal)
+    OIDC_OP_JWKS_ENDPOINT: {{ .Values._common.oidc.jwksEndpoint }}
+    OIDC_OP_TOKEN_ENDPOINT: {{ .Values._common.oidc.tokenEndpoint }}
+    OIDC_OP_USER_ENDPOINT: {{ .Values._common.oidc.userEndpoint }}
+    OIDC_RP_CLIENT_ID: meet
+    OIDC_RP_CLIENT_SECRET:
+      secretKeyRef:
+        name: meet-secrets
+        key: OIDC_RP_CLIENT_SECRET
+    OIDC_RP_SIGN_ALGO: {{ .Values._common.oidc.signAlgo }}
+    OIDC_RP_SCOPES: {{ .Values._common.oidc.scopes | quote }}
+    OIDC_VERIFY_SSL: {{ .Values._common.oidc.verifySsl | quote }}
+    OIDC_REDIRECT_ALLOWED_HOSTS: https://meet.{{ .Values.domain }}
+    # Redirects
+    LOGIN_REDIRECT_URL: https://meet.{{ .Values.domain }}
+    LOGIN_REDIRECT_URL_FAILURE: https://meet.{{ .Values.domain }}
+    LOGOUT_REDIRECT_URL: https://meet.{{ .Values.domain }}
+    # Room settings
+    ALLOW_UNREGISTERED_ROOMS: "True"
+    # Disable recording (requires S3 + LiveKit Egress)
+    RECORDING_ENABLE: "False"
+
+  migrate:
+    command:
+      - "/bin/sh"
+      - "-c"
+      - |
+        python manage.py migrate --no-input
+    restartPolicy: Never
+
+  createsuperuser:
+    command:
+      - "/bin/sh"
+      - "-c"
+      - |
+        python manage.py createsuperuser --email {{ .Values.adminEmail }} --password $DJANGO_SUPERUSER_PASSWORD
+    restartPolicy: Never
+
+# Frontend
+frontend:
+  replicas: 1
+  image:
+    repository: lasuite/meet-frontend
+    pullPolicy: IfNotPresent
+    tag: latest
+
+# Summary service (AI) - disabled
+summary:
+  replicas: 0
+
+# Celery workers (for transcription/summarization) - disabled
+celeryTranscribe:
+  replicas: 0
+
+celerySummarize:
+  replicas: 0
+
+# Agents - disabled
+agents:
+  replicas: 0

@@ -5,7 +5,7 @@ apps:
   docs:
     enabled: true
   meet:
-    enabled: false
+    enabled: true
   drive:
     enabled: true
   desk:
@@ -21,6 +21,9 @@ postgres:
 keycloak:
   enabled: true
   realm: lasuite
+  # URL overrides (optional, defaults to auth.{domain})
+  externalUrl: ""   # Empty = use auth.{domain}
+  backendUrl: ""    # Empty = use internal service (or externalUrl if set)
   testUser:
     enabled: true
     username: user
@@ -35,8 +38,14 @@ redis:
 minio:
   enabled: true
 
+livekit:
+  enabled: true
+
 s3:
-  endpoint: http://minio.pa-minio.svc.cluster.local:9000
+  provider: minio  # aws | oos | minio
+  endpoint: http://minio.lasuite-minio.svc.cluster.local:9000
+  host: minio.lasuite-minio.svc.cluster.local
+  port: 9000
 
 ingress:
   enabled: true

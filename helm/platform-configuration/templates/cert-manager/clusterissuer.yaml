@@ -1,4 +1,4 @@
-{{- if eq .Values.issuer "selfsigned" }}
+{{- if eq .Values.tls.issuer "selfsigned" }}
 ---
 # Self-signed CA for local development
 apiVersion: cert-manager.io/v1
@@ -37,7 +37,7 @@ spec:
     secretName: lasuite-ca-secret
 {{- end }}
 
-{{- if eq .Values.issuer "letsencrypt" }}
+{{- if eq .Values.tls.issuer "letsencrypt" }}
 ---
 # Let's Encrypt production issuer
 apiVersion: cert-manager.io/v1
@@ -47,11 +47,11 @@ metadata:
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: {{ .Values.email | required "email is required for letsencrypt issuer" }}
+    email: {{ .Values.tls.email | required "tls.email is required for letsencrypt issuer" }}
     privateKeySecretRef:
       name: letsencrypt-account-key
     solvers:
       - http01:
           ingress:
-            class: haproxy
+            ingressClassName: {{ .Values.ingress.className }}
 {{- end }}
