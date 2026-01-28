@@ -27,7 +27,8 @@ Generate Keycloak realm JSON
       "credentials": [
         {
           "type": "password",
-          "value": "{{ .Values.testUser.password }}"
+          "value": "{{ .Values.testUser.password }}",
+          "temporary": false
         }
       ]
     }
@@ -37,33 +38,26 @@ Generate Keycloak realm JSON
   {{- end }}
   "clients": [
     {{- $clients := list -}}
-    {{- range .Values.appsEnabled }}
-    {{- $appName := . -}}
-    {{- $clientSecret := include "deriveSecret" (dict "seed" $seed "clientId" (printf "%s-oidc-client" $appName)) -}}
-    {{- $client := printf `{
-      "clientId": "%s",
-      "name": "%s",
-      "enabled": true,
-      "clientAuthenticatorType": "client-secret",
-      "secret": "%s",
-      "redirectUris": ["https://%s.%s/*"],
-      "webOrigins": ["https://%s.%s"],
-      "standardFlowEnabled": true,
-      "implicitFlowEnabled": false,
-      "directAccessGrantsEnabled": false,
-      "serviceAccountsEnabled": false,
-      "publicClient": false,
-      "frontchannelLogout": true,
-      "protocol": "openid-connect",
-      "attributes": {
-        "post.logout.redirect.uris": "https://%s.%s/*",
-        "user.info.response.signature.alg": "RS256"
-      },
-      "defaultClientScopes": ["web-origins", "acr", "roles", "profile", "email"],
-      "optionalClientScopes": ["address", "phone", "offline_access"]
-    }` $appName $appName $clientSecret $appName $domain $appName $domain $appName $domain -}}
-    {{- $clients = append $clients $client -}}
-    {{- end }}
+    {{- if .Values.apps.docs.enabled -}}
+    {{- $clientSecret := include "deriveSecret" (dict "seed" $seed "clientId" "docs-oidc-client") -}}
+    {{- $clients = append $clients (printf `{"clientId": "docs", "name": "docs", "enabled": true, "clientAuthenticatorType": "client-secret", "secret": "%s", "redirectUris": ["https://docs.%s/*"], "webOrigins": ["https://docs.%s"], "standardFlowEnabled": true, "implicitFlowEnabled": false, "directAccessGrantsEnabled": false, "serviceAccountsEnabled": false, "publicClient": false, "frontchannelLogout": true, "protocol": "openid-connect", "attributes": {"post.logout.redirect.uris": "https://docs.%s/*", "user.info.response.signature.alg": "RS256"}, "defaultClientScopes": ["web-origins", "acr", "roles", "profile", "email"], "optionalClientScopes": ["address", "phone", "offline_access"]}` $clientSecret $domain $domain $domain) -}}
+    {{- end -}}
+    {{- if .Values.apps.meet.enabled -}}
+    {{- $clientSecret := include "deriveSecret" (dict "seed" $seed "clientId" "meet-oidc-client") -}}
+    {{- $clients = append $clients (printf `{"clientId": "meet", "name": "meet", "enabled": true, "clientAuthenticatorType": "client-secret", "secret": "%s", "redirectUris": ["https://meet.%s/*"], "webOrigins": ["https://meet.%s"], "standardFlowEnabled": true, "implicitFlowEnabled": false, "directAccessGrantsEnabled": false, "serviceAccountsEnabled": false, "publicClient": false, "frontchannelLogout": true, "protocol": "openid-connect", "attributes": {"post.logout.redirect.uris": "https://meet.%s/*", "user.info.response.signature.alg": "RS256"}, "defaultClientScopes": ["web-origins", "acr", "roles", "profile", "email"], "optionalClientScopes": ["address", "phone", "offline_access"]}` $clientSecret $domain $domain $domain) -}}
+    {{- end -}}
+    {{- if .Values.apps.drive.enabled -}}
+    {{- $clientSecret := include "deriveSecret" (dict "seed" $seed "clientId" "drive-oidc-client") -}}
+    {{- $clients = append $clients (printf `{"clientId": "drive", "name": "drive", "enabled": true, "clientAuthenticatorType": "client-secret", "secret": "%s", "redirectUris": ["https://drive.%s/*"], "webOrigins": ["https://drive.%s"], "standardFlowEnabled": true, "implicitFlowEnabled": false, "directAccessGrantsEnabled": false, "serviceAccountsEnabled": false, "publicClient": false, "frontchannelLogout": true, "protocol": "openid-connect", "attributes": {"post.logout.redirect.uris": "https://drive.%s/*", "user.info.response.signature.alg": "RS256"}, "defaultClientScopes": ["web-origins", "acr", "roles", "profile", "email"], "optionalClientScopes": ["address", "phone", "offline_access"]}` $clientSecret $domain $domain $domain) -}}
+    {{- end -}}
+    {{- if .Values.apps.desk.enabled -}}
+    {{- $clientSecret := include "deriveSecret" (dict "seed" $seed "clientId" "desk-oidc-client") -}}
+    {{- $clients = append $clients (printf `{"clientId": "desk", "name": "desk", "enabled": true, "clientAuthenticatorType": "client-secret", "secret": "%s", "redirectUris": ["https://desk.%s/*"], "webOrigins": ["https://desk.%s"], "standardFlowEnabled": true, "implicitFlowEnabled": false, "directAccessGrantsEnabled": false, "serviceAccountsEnabled": false, "publicClient": false, "frontchannelLogout": true, "protocol": "openid-connect", "attributes": {"post.logout.redirect.uris": "https://desk.%s/*", "user.info.response.signature.alg": "RS256"}, "defaultClientScopes": ["web-origins", "acr", "roles", "profile", "email"], "optionalClientScopes": ["address", "phone", "offline_access"]}` $clientSecret $domain $domain $domain) -}}
+    {{- end -}}
+    {{- if .Values.apps.conversations.enabled -}}
+    {{- $clientSecret := include "deriveSecret" (dict "seed" $seed "clientId" "conversations-oidc-client") -}}
+    {{- $clients = append $clients (printf `{"clientId": "conversations", "name": "conversations", "enabled": true, "clientAuthenticatorType": "client-secret", "secret": "%s", "redirectUris": ["https://conversations.%s/*"], "webOrigins": ["https://conversations.%s"], "standardFlowEnabled": true, "implicitFlowEnabled": false, "directAccessGrantsEnabled": false, "serviceAccountsEnabled": false, "publicClient": false, "frontchannelLogout": true, "protocol": "openid-connect", "attributes": {"post.logout.redirect.uris": "https://conversations.%s/*", "user.info.response.signature.alg": "RS256"}, "defaultClientScopes": ["web-origins", "acr", "roles", "profile", "email"], "optionalClientScopes": ["address", "phone", "offline_access"]}` $clientSecret $domain $domain $domain) -}}
+    {{- end -}}
     {{ join "," $clients }}
   ],
   "defaultDefaultClientScopes": ["role_list", "profile", "email", "roles", "web-origins", "acr"],

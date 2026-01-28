@@ -10,49 +10,91 @@ primary:
     size: 10Gi
   initdb:
     scripts:
-      init-databases.sql: |
-        -- Keycloak database
-        CREATE DATABASE keycloak;
-        CREATE USER keycloak WITH ENCRYPTED PASSWORD '{{ template "secret" (list .Values.secretSeed "keycloak-db") }}';
-        GRANT ALL PRIVILEGES ON DATABASE keycloak TO keycloak;
-        ALTER DATABASE keycloak OWNER TO keycloak;
+      00_init_databases.sh: |
+        #!/bin/bash
+        set -e
 
-        {{- if has "docs" .Values.appsEnabled }}
-        -- Docs database
-        CREATE DATABASE docs;
-        CREATE USER docs WITH ENCRYPTED PASSWORD '{{ template "secret" (list .Values.secretSeed "docs-db") }}';
-        GRANT ALL PRIVILEGES ON DATABASE docs TO docs;
-        ALTER DATABASE docs OWNER TO docs;
+        # Use postgres password from Bitnami env
+        export PGPASSWORD="${POSTGRESQL_POSTGRES_PASSWORD}"
+
+        echo "Creating databases and users..."
+
+        # Keycloak
+        psql -v ON_ERROR_STOP=1 --username "postgres" <<-EOSQL
+          CREATE DATABASE keycloak;
+          CREATE USER keycloak WITH ENCRYPTED PASSWORD '{{ template "secret" (list .Values.secretSeed "keycloak-db") }}';
+          GRANT ALL PRIVILEGES ON DATABASE keycloak TO keycloak;
+          ALTER DATABASE keycloak OWNER TO keycloak;
+        EOSQL
+
+        {{- if .Values.apps.docs.enabled }}
+        # Docs
+        psql -v ON_ERROR_STOP=1 --username "postgres" <<-EOSQL
+          CREATE DATABASE docs;
+          CREATE USER docs WITH SUPERUSER ENCRYPTED PASSWORD '{{ template "secret" (list .Values.secretSeed "docs-db") }}';
+          GRANT ALL PRIVILEGES ON DATABASE docs TO docs;
+          ALTER DATABASE docs OWNER TO docs;
+        EOSQL
+        psql -v ON_ERROR_STOP=1 --username "postgres" -d docs <<-EOSQL
+          CREATE EXTENSION IF NOT EXISTS pg_trgm;
+          CREATE EXTENSION IF NOT EXISTS unaccent;
+        EOSQL
         {{- end }}
 
-        {{- if has "meet" .Values.appsEnabled }}
-        -- Meet database
-        CREATE DATABASE meet;
-        CREATE USER meet WITH ENCRYPTED PASSWORD '{{ template "secret" (list .Values.secretSeed "meet-db") }}';
-        GRANT ALL PRIVILEGES ON DATABASE meet TO meet;
-        ALTER DATABASE meet OWNER TO meet;
+        {{- if .Values.apps.meet.enabled }}
+        # Meet
+        psql -v ON_ERROR_STOP=1 --username "postgres" <<-EOSQL
+          CREATE DATABASE meet;
+          CREATE USER meet WITH SUPERUSER ENCRYPTED PASSWORD '{{ template "secret" (list .Values.secretSeed "meet-db") }}';
+          GRANT ALL PRIVILEGES ON DATABASE meet TO meet;
+          ALTER DATABASE meet OWNER TO meet;
+        EOSQL
+        psql -v ON_ERROR_STOP=1 --username "postgres" -d meet <<-EOSQL
+          CREATE EXTENSION IF NOT EXISTS pg_trgm;
+          CREATE EXTENSION IF NOT EXISTS unaccent;
+        EOSQL
         {{- end }}
 
-        {{- if has "drive" .Values.appsEnabled }}
-        -- Drive database
-        CREATE DATABASE drive;
-        CREATE USER drive WITH ENCRYPTED PASSWORD '{{ template "secret" (list .Values.secretSeed "drive-db") }}';
-        GRANT ALL PRIVILEGES ON DATABASE drive TO drive;
-        ALTER DATABASE drive OWNER TO drive;
+        {{- if .Values.apps.drive.enabled }}
+        # Drive
+        psql -v ON_ERROR_STOP=1 --username "postgres" <<-EOSQL
+          CREATE DATABASE drive;
+          CREATE USER drive WITH SUPERUSER ENCRYPTED PASSWORD '{{ template "secret" (list .Values.secretSeed "drive-db") }}';
+          GRANT ALL PRIVILEGES ON DATABASE drive TO drive;
+          ALTER DATABASE drive OWNER TO drive;
+        EOSQL
+        psql -v ON_ERROR_STOP=1 --username "postgres" -d drive <<-EOSQL
+          CREATE EXTENSION IF NOT EXISTS pg_trgm;
+          CREATE EXTENSION IF NOT EXISTS unaccent;
+        EOSQL
         {{- end }}
 
-        {{- if has "desk" .Values.appsEnabled }}
-        -- Desk database
-        CREATE DATABASE desk;
-        CREATE USER desk WITH ENCRYPTED PASSWORD '{{ template "secret" (list .Values.secretSeed "desk-db") }}';
-        GRANT ALL PRIVILEGES ON DATABASE desk TO desk;
-        ALTER DATABASE desk OWNER TO desk;
+        {{- if .Values.apps.desk.enabled }}
+        # Desk
+        psql -v ON_ERROR_STOP=1 --username "postgres" <<-EOSQL
+          CREATE DATABASE desk;
+          CREATE USER desk WITH SUPERUSER ENCRYPTED PASSWORD '{{ template "secret" (list .Values.secretSeed "desk-db") }}';
+          GRANT ALL PRIVILEGES ON DATABASE desk TO desk;
+          ALTER DATABASE desk OWNER TO desk;
+        EOSQL
+        psql -v ON_ERROR_STOP=1 --username "postgres" -d desk <<-EOSQL
+          CREATE EXTENSION IF NOT EXISTS pg_trgm;
+          CREATE EXTENSION IF NOT EXISTS unaccent;
+        EOSQL
         {{- end }}
 
-        {{- if has "conversations" .Values.appsEnabled }}
-        -- Conversations database
-        CREATE DATABASE conversations;
-        CREATE USER conversations WITH ENCRYPTED PASSWORD '{{ template "secret" (list .Values.secretSeed "conversations-db") }}';
-        GRANT ALL PRIVILEGES ON DATABASE conversations TO conversations;
-        ALTER DATABASE conversations OWNER TO conversations;
+        {{- if .Values.apps.conversations.enabled }}
+        # Conversations
+        psql -v ON_ERROR_STOP=1 --username "postgres" <<-EOSQL
+          CREATE DATABASE conversations;
+          CREATE USER conversations WITH SUPERUSER ENCRYPTED PASSWORD '{{ template "secret" (list .Values.secretSeed "conversations-db") }}';
+          GRANT ALL PRIVILEGES ON DATABASE conversations TO conversations;
+          ALTER DATABASE conversations OWNER TO conversations;
+        EOSQL
+        psql -v ON_ERROR_STOP=1 --username "postgres" -d conversations <<-EOSQL
+          CREATE EXTENSION IF NOT EXISTS pg_trgm;
+          CREATE EXTENSION IF NOT EXISTS unaccent;
+        EOSQL
         {{- end }}
+
+        echo "Init complete."

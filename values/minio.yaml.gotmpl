@@ -1,17 +1,56 @@
 {{- define "secret" -}}{{- $seed := index . 0 -}}{{- $id := index . 1 -}}{{- printf "%s:%s" $seed $id | sha256sum | trunc 48 -}}{{- end -}}
-auth:
-  rootUser: {{ template "secret" (list .Values.secretSeed "minio-access") }}
-  rootPassword: {{ template "secret" (list .Values.secretSeed "minio-secret") }}
+# Official MinIO chart (https://charts.min.io/)
+mode: standalone
+replicas: 1
+
+rootUser: {{ template "secret" (list .Values.secretSeed "minio-access") }}
+rootPassword: {{ template "secret" (list .Values.secretSeed "minio-secret") }}
 
 persistence:
+  enabled: true
   size: 10Gi
+
+resources:
+  requests:
+    memory: 256Mi
+    cpu: 250m
+  limits:
+    memory: 512Mi
+    cpu: 500m
 
 ingress:
   enabled: true
   ingressClassName: {{ .Values.ingress.className | quote }}
-  hostname: minio.{{ .Values.domain }}
+  hosts:
+    - minio.{{ .Values.domain }}
   annotations:
     cert-manager.io/cluster-issuer: {{ .Values.tls.issuer }}
-  tls: true
+  tls:
+    - secretName: minio-tls
+      hosts:
+        - minio.{{ .Values.domain }}
 
-defaultBuckets: {{ $buckets := list }}{{ if has "docs" .Values.appsEnabled }}{{ $buckets = append $buckets "docs-media-storage" }}{{ end }}{{ if has "drive" .Values.appsEnabled }}{{ $buckets = append $buckets "drive-media-storage" }}{{ end }}{{ join "," $buckets | quote }}
+consoleIngress:
+  enabled: true
+  ingressClassName: {{ .Values.ingress.className | quote }}
+  hosts:
+    - minio-console.{{ .Values.domain }}
+  annotations:
+    cert-manager.io/cluster-issuer: {{ .Values.tls.issuer }}
+  tls:
+    - secretName: minio-console-tls
+      hosts:
+        - minio-console.{{ .Values.domain }}
+
+# Create buckets on startup
+buckets:
+{{- if .Values.apps.docs.enabled }}
+  - name: docs-media-storage
+    policy: none
+    purge: false
+{{- end }}
+{{- if .Values.apps.drive.enabled }}
+  - name: drive-media-storage
+    policy: none
+    purge: false
+{{- end }}

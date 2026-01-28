@@ -1,22 +1,46 @@
 secretSeed: {{ .Values.secretSeed | quote }}
 domain: {{ .Values.domain | quote }}
-appsEnabled: {{ .Values.appsEnabled | toYaml | nindent 2 }}
+
+# Build appsEnabled list from apps.*.enabled for templates that use range
+appsEnabled:
+{{- if .Values.apps.docs.enabled }}
+  - docs
+{{- end }}
+{{- if .Values.apps.meet.enabled }}
+  - meet
+{{- end }}
+{{- if .Values.apps.drive.enabled }}
+  - drive
+{{- end }}
+{{- if .Values.apps.desk.enabled }}
+  - desk
+{{- end }}
+{{- if .Values.apps.conversations.enabled }}
+  - conversations
+{{- end }}
+
+apps:
+  docs:
+    enabled: {{ .Values.apps.docs.enabled }}
+  meet:
+    enabled: {{ .Values.apps.meet.enabled }}
+  drive:
+    enabled: {{ .Values.apps.drive.enabled }}
+  desk:
+    enabled: {{ .Values.apps.desk.enabled }}
+  conversations:
+    enabled: {{ .Values.apps.conversations.enabled }}
 
 keycloak:
   realm: {{ .Values.keycloak.realm | quote }}
 
 postgres:
-  useExisting: {{ .Values.postgres.useExisting }}
-  host: postgresql.lasuite-postgres.svc.cluster.local
-  port: 5432
+  host: {{ .Values.postgres.host | quote }}
+  port: {{ .Values.postgres.port }}
 
 redis:
-  useExisting: {{ .Values.redis.useExisting }}
-  host: redis-master.lasuite-redis.svc.cluster.local
-  port: 6379
+  host: {{ .Values.redis.host | quote }}
+  port: {{ .Values.redis.port }}
 
 s3:
-  useExisting: {{ .Values.s3.useExisting }}
-  {{- if not .Values.s3.useExisting }}
-  endpoint: http://minio.lasuite-minio.svc.cluster.local:9000
-  {{- end }}
+  endpoint: {{ .Values.s3.endpoint | quote }}

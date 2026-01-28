@@ -1,77 +1,54 @@
-# ===========================================
-# GLOBAL DOMAIN
-# ===========================================
-# Apps will be accessible at {app}.{domain}
-# E.g., docs.suite.local, meet.suite.local, etc.
 domain: suite.local
+adminEmail: admin@suite.local
 
-# ===========================================
-# APPLICATIONS TO DEPLOY
-# ===========================================
-appsEnabled:
-  - docs
-  # - meet
-  # - drive
-  # - desk
-  # - conversations
+apps:
+  docs:
+    enabled: true
+  meet:
+    enabled: false
+  drive:
+    enabled: false
+  desk:
+    enabled: false
+  conversations:
+    enabled: false
 
-# ===========================================
-# POSTGRESQL
-# ===========================================
 postgres:
-  useExisting: false  # Deploy PostgreSQL via Bitnami chart
+  enabled: true
+  host: lasuite-postgresql.lasuite-postgresql.svc.cluster.local
+  port: 5432
 
-# ===========================================
-# KEYCLOAK (OIDC)
-# ===========================================
-# Always deployed (keycloak-lasuite). For external IdP, configure it
-# as Identity Provider in the lasuite realm.
 keycloak:
+  enabled: true
   realm: lasuite
+  testUser:
+    enabled: true
+    username: user
+    email: user@example.com
+    password: password
 
-# ===========================================
-# REDIS
-# ===========================================
 redis:
-  useExisting: false  # Deploy Redis via Bitnami chart
+  enabled: true
+  host: redis-master.lasuite-redis.svc.cluster.local
+  port: 6379
 
-# ===========================================
-# S3 / MINIO
-# ===========================================
-# MinIO is DEPRECATED and must NOT be used in production!
-# Use S3 (AWS, OOS Outscale, etc.) for any real deployment.
+minio:
+  enabled: true
+
 s3:
-  useExisting: false  # Deploy MinIO (DEV ONLY)
+  endpoint: http://minio.pa-minio.svc.cluster.local:9000
 
-# ===========================================
-# INGRESS CONTROLLER
-# ===========================================
 ingress:
-  useExisting: false  # Deploy HAProxy ingress controller
+  enabled: true
   className: haproxy
 
-# ===========================================
-# CERT-MANAGER
-# ===========================================
 certManager:
-  useExisting: false  # Deploy cert-manager
+  enabled: true
 
-# ===========================================
-# TLS
-# ===========================================
+reflector:
+  enabled: true
+
 tls:
   issuer: selfsigned
 
-# ===========================================
-# POSTGRES BACKUP
-# ===========================================
-postgresBackup:
-  enabled: false  # No backup needed in local dev
-
-# ===========================================
-# SECRET SEED (REQUIRED)
-# ===========================================
-# Seed for generating all internal secrets (DB, Redis, OIDC clients...)
-# For local env, this is loaded from conf/local/secrets.conf
-# MUST be defined by the user, never commit this value!
 secretSeed: ""

@@ -67,6 +67,11 @@ serviceMedia:
 backend:
   replicas: 1
   envVars:
+    DJANGO_SUPERUSER_EMAIL: {{ .Values.adminEmail }}
+    DJANGO_SUPERUSER_PASSWORD:
+      secretKeyRef:
+        name: docs-secrets
+        key: DJANGO_SUPERUSER_PASSWORD
     DJANGO_CONFIGURATION: Production
     DJANGO_SETTINGS_MODULE: impress.settings
     DJANGO_ALLOWED_HOSTS: docs.{{ .Values.domain }}
@@ -76,7 +81,7 @@ backend:
         name: docs-secrets
         key: DJANGO_SECRET_KEY
     # Database
-    DB_HOST: postgresql.lasuite-postgres.svc.cluster.local
+    DB_HOST: lasuite-postgresql.lasuite-postgresql.svc.cluster.local
     DB_PORT: "5432"
     DB_NAME: docs
     DB_USER: docs
@@ -105,12 +110,14 @@ backend:
         name: docs-secrets
         key: AWS_S3_SECRET_ACCESS_KEY
     STORAGES_STATICFILES_BACKEND: django.contrib.staticfiles.storage.StaticFilesStorage
-    # OIDC
-    OIDC_OP_JWKS_ENDPOINT: https://auth.{{ .Values.domain }}/realms/{{ .Values.keycloak.realm }}/protocol/openid-connect/certs
+    # OIDC - Browser redirects use external URL, backend calls use internal Kubernetes service
+    # Browser redirects (external)
     OIDC_OP_AUTHORIZATION_ENDPOINT: https://auth.{{ .Values.domain }}/realms/{{ .Values.keycloak.realm }}/protocol/openid-connect/auth
-    OIDC_OP_TOKEN_ENDPOINT: https://auth.{{ .Values.domain }}/realms/{{ .Values.keycloak.realm }}/protocol/openid-connect/token
-    OIDC_OP_USER_ENDPOINT: https://auth.{{ .Values.domain }}/realms/{{ .Values.keycloak.realm }}/protocol/openid-connect/userinfo
     OIDC_OP_LOGOUT_ENDPOINT: https://auth.{{ .Values.domain }}/realms/{{ .Values.keycloak.realm }}/protocol/openid-connect/logout
+    # Backend-to-backend calls (internal)
+    OIDC_OP_JWKS_ENDPOINT: http://keycloak-keycloakx-http.lasuite-keycloak.svc.cluster.local/realms/{{ .Values.keycloak.realm }}/protocol/openid-connect/certs
+    OIDC_OP_TOKEN_ENDPOINT: http://keycloak-keycloakx-http.lasuite-keycloak.svc.cluster.local/realms/{{ .Values.keycloak.realm }}/protocol/openid-connect/token
+    OIDC_OP_USER_ENDPOINT: http://keycloak-keycloakx-http.lasuite-keycloak.svc.cluster.local/realms/{{ .Values.keycloak.realm }}/protocol/openid-connect/userinfo
     OIDC_RP_CLIENT_ID: docs
     OIDC_RP_CLIENT_SECRET:
       secretKeyRef:

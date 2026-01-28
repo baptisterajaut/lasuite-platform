@@ -1,13 +1,13 @@
 # Backend/infrastructure chart versions
 chartVersions:
   # Bitnami
-  postgresql: "16.4.1"
-  redis: "20.6.0"
-  keycloak: "24.4.1"
-  minio: "14.8.3"
+  postgresql: "18.2.3"
+  redis: "24.1.2"
+  keycloak: "7.1.7"
+  minio: "5.4.0"
 
   # Infrastructure
-  certManager: "1.16.2"
+  certManager: "1.19.0"
   trustManager: "0.13.0"
-  haproxy: "1.46.1"
+  haproxy: "1.47.5"
   reflector: "9.1.45"
