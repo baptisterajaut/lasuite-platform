@@ -1,0 +1,97 @@
+# ===========================================
+# REMOTE ENVIRONMENT TEMPLATE
+# ===========================================
+# Copy this file to create your own environment:
+#   cp environments/remote-example.yaml environments/production.yaml
+# Then create corresponding conf/production/*.conf files
+
+# ===========================================
+# GLOBAL DOMAIN
+# ===========================================
+domain: suite.example.com
+
+# ===========================================
+# APPLICATIONS TO DEPLOY
+# ===========================================
+appsEnabled:
+  - docs
+  - meet
+  - drive
+  # - desk
+  # - conversations
+
+# ===========================================
+# POSTGRESQL
+# ===========================================
+postgres:
+  useExisting: true  # Use external PostgreSQL
+  # Configure in conf/production/postgres.conf:
+  # host: postgres.example.com
+  # port: 5432
+  # username: lasuite
+  # password: xxx
+
+# ===========================================
+# KEYCLOAK (OIDC)
+# ===========================================
+keycloak:
+  realm: lasuite
+
+# ===========================================
+# REDIS
+# ===========================================
+redis:
+  useExisting: true  # Use external Redis
+  # Configure in conf/production/redis.conf:
+  # host: redis.example.com
+  # port: 6379
+  # password: xxx
+
+# ===========================================
+# S3
+# ===========================================
+s3:
+  useExisting: true  # Use external S3 (AWS, OOS Outscale, etc.)
+  # Configure in conf/production/s3.conf:
+  # endpoint: https://s3.eu-west-1.amazonaws.com
+  # region: eu-west-1
+  # accessKey: xxx
+  # secretKey: xxx
+
+# ===========================================
+# INGRESS CONTROLLER
+# ===========================================
+ingress:
+  useExisting: false  # Deploy HAProxy ingress controller
+  className: haproxy
+
+# ===========================================
+# CERT-MANAGER
+# ===========================================
+certManager:
+  useExisting: false  # Deploy cert-manager
+
+# ===========================================
+# TLS
+# ===========================================
+tls:
+  issuer: letsencrypt
+  email: admin@example.com
+
+# ===========================================
+# POSTGRES BACKUP
+# ===========================================
+postgresBackup:
+  enabled: true
+  schedule: "0 2 * * *"  # Daily at 2am
+  s3:
+    bucket: lasuite-postgres-backups
+    # Uses same S3 config as above
+
+# ===========================================
+# SECRET SEED (REQUIRED)
+# ===========================================
+# Seed for generating all internal secrets (DB, Redis, OIDC clients...)
+# Load from conf/production/secrets.conf
+# MUST be defined, error if empty!
+secretSeed: ""

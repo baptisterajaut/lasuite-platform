@@ -1,0 +1,30 @@
+# Secret seed for generating all internal secrets
+# MUST be defined, error if empty
+secretSeed: ""
+
+# Domain for the platform
+domain: suite.local
+
+# Applications enabled
+appsEnabled: []
+
+# Keycloak configuration
+keycloak:
+  realm: lasuite
+
+# PostgreSQL configuration
+postgres:
+  useExisting: false
+  host: postgresql.lasuite-postgres.svc.cluster.local
+  port: 5432
+
+# Redis configuration
+redis:
+  useExisting: false
+  host: redis-master.lasuite-redis.svc.cluster.local
+  port: 6379
+
+# S3/MinIO configuration
+s3:
+  useExisting: false
+  endpoint: http://minio.lasuite-minio.svc.cluster.local:9000

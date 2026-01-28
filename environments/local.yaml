@@ -1,0 +1,77 @@
+# ===========================================
+# GLOBAL DOMAIN
+# ===========================================
+# Apps will be accessible at {app}.{domain}
+# E.g., docs.suite.local, meet.suite.local, etc.
+domain: suite.local
+
+# ===========================================
+# APPLICATIONS TO DEPLOY
+# ===========================================
+appsEnabled:
+  - docs
+  # - meet
+  # - drive
+  # - desk
+  # - conversations
+
+# ===========================================
+# POSTGRESQL
+# ===========================================
+postgres:
+  useExisting: false  # Deploy PostgreSQL via Bitnami chart
+
+# ===========================================
+# KEYCLOAK (OIDC)
+# ===========================================
+# Always deployed (keycloak-lasuite). For external IdP, configure it
+# as Identity Provider in the lasuite realm.
+keycloak:
+  realm: lasuite
+
+# ===========================================
+# REDIS
+# ===========================================
+redis:
+  useExisting: false  # Deploy Redis via Bitnami chart
+
+# ===========================================
+# S3 / MINIO
+# ===========================================
+# MinIO is DEPRECATED and must NOT be used in production!
+# Use S3 (AWS, OOS Outscale, etc.) for any real deployment.
+s3:
+  useExisting: false  # Deploy MinIO (DEV ONLY)
+
+# ===========================================
+# INGRESS CONTROLLER
+# ===========================================
+ingress:
+  useExisting: false  # Deploy HAProxy ingress controller
+  className: haproxy
+
+# ===========================================
+# CERT-MANAGER
+# ===========================================
+certManager:
+  useExisting: false  # Deploy cert-manager
+
+# ===========================================
+# TLS
+# ===========================================
+tls:
+  issuer: selfsigned
+
+# ===========================================
+# POSTGRES BACKUP
+# ===========================================
+postgresBackup:
+  enabled: false  # No backup needed in local dev
+
+# ===========================================
+# SECRET SEED (REQUIRED)
+# ===========================================
+# Seed for generating all internal secrets (DB, Redis, OIDC clients...)
+# For local env, this is loaded from conf/local/secrets.conf
+# MUST be defined by the user, never commit this value!
+secretSeed: ""

@@ -1,0 +1,5 @@
+# Ignore all .conf files (contain secrets)
+*.conf
+
+# But keep .example files
+!*.example

@@ -1,0 +1,5 @@
+# Certificate issuer type: selfsigned or letsencrypt
+issuer: selfsigned
+
+# Email for Let's Encrypt (required if issuer=letsencrypt)
+email: ""

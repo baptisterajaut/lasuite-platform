@@ -1,0 +1,38 @@
+{{- define "secret" -}}{{- $seed := index . 0 -}}{{- $id := index . 1 -}}{{- printf "%s:%s" $seed $id | sha256sum | trunc 48 -}}{{- end -}}
+auth:
+  adminUser: admin
+  adminPassword: {{ template "secret" (list .Values.secretSeed "keycloak-admin") }}
+
+postgresql:
+  enabled: false
+
+externalDatabase:
+  host: postgresql.lasuite-postgres.svc.cluster.local
+  port: 5432
+  database: keycloak
+  user: keycloak
+  password: {{ template "secret" (list .Values.secretSeed "keycloak-db") }}
+
+ingress:
+  enabled: true
+  ingressClassName: {{ .Values.ingress.className | quote }}
+  hostname: auth.{{ .Values.domain }}
+  annotations:
+    cert-manager.io/cluster-issuer: {{ .Values.tls.issuer }}
+  tls: true
+
+# Mount realm configuration for import
+extraVolumes:
+  - name: realm-import
+    configMap:
+      name: keycloak-realm-import
+
+extraVolumeMounts:
+  - name: realm-import
+    mountPath: /opt/bitnami/keycloak/data/import
+    readOnly: true
+
+# Enable realm import on startup
+extraEnvVars:
+  - name: KEYCLOAK_EXTRA_ARGS
+    value: "--import-realm"

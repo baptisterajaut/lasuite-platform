@@ -1,0 +1,7 @@
+# La Suite numerique chart versions
+chartVersions:
+  docs: "4.4.0"
+  meet: "0.0.15"
+  drive: "0.11.1"
+  desk: "0.0.7"
+  conversations: "0.0.4"

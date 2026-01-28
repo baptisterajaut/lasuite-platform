@@ -1,0 +1,4 @@
+controller:
+  ingressClass: {{ .Values.ingress.className | quote }}
+  service:
+    type: LoadBalancer

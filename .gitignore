@@ -1,0 +1,14 @@
+# SOPS keys
+keys/
+
+# Helm charts downloaded
+charts/
+
+# Cloned La Suite repos for reference
+lasuite-repos/
+
+# Helmfile lock
+.helmfile/
+
+# OS files
+.DS_Store

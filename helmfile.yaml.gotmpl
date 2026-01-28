@@ -1,0 +1,208 @@
+# ===========================================
+# HELM REPOSITORIES
+# ===========================================
+repositories:
+  # Infrastructure
+  - name: bitnami
+    url: https://charts.bitnami.com/bitnami
+  - name: jetstack
+    url: https://charts.jetstack.io
+  - name: haproxytech
+    url: https://haproxytech.github.io/helm-charts
+  - name: emberstack
+    url: https://emberstack.github.io/helm-charts
+
+  # La Suite Numerique
+  - name: docs
+    url: https://suitenumerique.github.io/docs/
+  - name: meet
+    url: https://suitenumerique.github.io/meet/
+  - name: drive
+    url: https://suitenumerique.github.io/drive/
+  - name: people
+    url: https://suitenumerique.github.io/people/
+  - name: conversations
+    url: https://suitenumerique.github.io/conversations/
+
+# ===========================================
+# HELM DEFAULTS
+# ===========================================
+helmDefaults:
+  wait: true
+  waitForJobs: true
+  timeout: 600
+  createNamespace: true
+
+# ===========================================
+# ENVIRONMENTS
+# ===========================================
+environments:
+  local:
+    values:
+      - versions/backend-helm-versions.yaml
+      - versions/lasuite-helm-versions.yaml
+      - environments/local.yaml
+      - conf/local/secrets.conf
+    missingFileHandler: Warn
+
+  remote-example:
+    values:
+      - versions/backend-helm-versions.yaml
+      - versions/lasuite-helm-versions.yaml
+      - environments/remote-example.yaml
+    missingFileHandler: Error
+
+---
+# ===========================================
+# RELEASES
+# ===========================================
+releases:
+  # -------------------------------------------
+  # CERT-MANAGER
+  # -------------------------------------------
+  - name: cert-manager
+    namespace: cert-manager
+    chart: jetstack/cert-manager
+    version: {{ .Values.chartVersions.certManager | quote }}
+    installed: {{ not .Values.certManager.useExisting }}
+    labels:
+      category: infrastructure
+    values:
+      - values/cert-manager.yaml.gotmpl
+
+  # -------------------------------------------
+  # CERTIFICATE ISSUER
+  # -------------------------------------------
+  - name: certificate-issuer
+    namespace: cert-manager
+    chart: ./helm/certificate-issuer
+    needs:
+      - cert-manager/cert-manager
+    labels:
+      category: infrastructure
+    values:
+      - values/certificate-issuer.yaml.gotmpl
+
+  # -------------------------------------------
+  # HAPROXY INGRESS CONTROLLER
+  # -------------------------------------------
+  - name: haproxy-ingress
+    namespace: haproxy-controller
+    chart: haproxytech/kubernetes-ingress
+    version: {{ .Values.chartVersions.haproxy | quote }}
+    installed: {{ not .Values.ingress.useExisting }}
+    labels:
+      category: infrastructure
+    values:
+      - values/haproxy-ingress.yaml.gotmpl
+
+  # -------------------------------------------
+  # REFLECTOR
+  # -------------------------------------------
+  - name: reflector
+    namespace: reflector
+    chart: emberstack/reflector
+    version: {{ .Values.chartVersions.reflector | quote }}
+    labels:
+      category: infrastructure
+
+  # -------------------------------------------
+  # POSTGRESQL
+  # -------------------------------------------
+  - name: postgresql
+    namespace: lasuite-postgres
+    chart: bitnami/postgresql
+    version: {{ .Values.chartVersions.postgresql | quote }}
+    installed: {{ not .Values.postgres.useExisting }}
+    labels:
+      category: infrastructure
+    values:
+      - values/postgresql.yaml.gotmpl
+
+  # -------------------------------------------
+  # REDIS
+  # -------------------------------------------
+  - name: redis
+    namespace: lasuite-redis
+    chart: bitnami/redis
+    version: {{ .Values.chartVersions.redis | quote }}
+    installed: {{ not .Values.redis.useExisting }}
+    labels:
+      category: infrastructure
+    values:
+      - values/redis.yaml.gotmpl
+
+  # -------------------------------------------
+  # KEYCLOAK REALM CONFIGURATION
+  # -------------------------------------------
+  - name: keycloak-realm
+    namespace: keycloak-lasuite
+    chart: ./helm/keycloak-realm
+    labels:
+      category: infrastructure
+    values:
+      - values/keycloak-realm.yaml.gotmpl
+
+  # -------------------------------------------
+  # KEYCLOAK
+  # -------------------------------------------
+  - name: keycloak
+    namespace: keycloak-lasuite
+    chart: bitnami/keycloak
+    version: {{ .Values.chartVersions.keycloak | quote }}
+    needs:
+      - lasuite-postgres/postgresql
+      - keycloak-lasuite/keycloak-realm
+    labels:
+      category: infrastructure
+    values:
+      - values/keycloak.yaml.gotmpl
+
+  # -------------------------------------------
+  # MINIO (dev only)
+  # -------------------------------------------
+  - name: minio
+    namespace: lasuite-minio
+    chart: bitnami/minio
+    version: {{ .Values.chartVersions.minio | quote }}
+    installed: {{ not .Values.s3.useExisting }}
+    labels:
+      category: infrastructure
+    values:
+      - values/minio.yaml.gotmpl
+
+  # -------------------------------------------
+  # PLATFORM CONFIGURATION
+  # -------------------------------------------
+  - name: platform-configuration
+    namespace: lasuite-config
+    chart: ./helm/platform-configuration
+    needs:
+      - cert-manager/certificate-issuer
+      - reflector/reflector
+    labels:
+      category: infrastructure
+    values:
+      - values/platform-configuration.yaml.gotmpl
+
+  # -------------------------------------------
+  # DOCS
+  # -------------------------------------------
+  - name: docs
+    namespace: lasuite-docs
+    chart: docs/docs
+    version: {{ .Values.chartVersions.docs | quote }}
+    installed: {{ has "docs" .Values.appsEnabled }}
+    needs:
+      - lasuite-config/platform-configuration
+      - lasuite-postgres/postgresql
+      - lasuite-redis/redis
+      - keycloak-lasuite/keycloak
+      {{- if not .Values.s3.useExisting }}
+      - lasuite-minio/minio
+      {{- end }}
+    labels:
+      category: business
+      app: docs
+    values:
+      - values/docs.yaml.gotmpl
