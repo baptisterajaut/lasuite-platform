@@ -15,7 +15,7 @@ keycloak:
 # PostgreSQL configuration
 postgres:
   useExisting: false
-  host: postgresql.lasuite-postgres.svc.cluster.local
+  host: lasuite-postgresql.lasuite-postgresql.svc.cluster.local
   port: 5432
 
 # Redis configuration

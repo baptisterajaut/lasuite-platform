@@ -2,3 +2,5 @@ controller:
   ingressClass: {{ .Values.ingress.className | quote }}
   service:
     type: LoadBalancer
+  config:
+    ssl-redirect-port: "443"

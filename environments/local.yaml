@@ -7,7 +7,7 @@ apps:
   meet:
     enabled: false
   drive:
-    enabled: false
+    enabled: true
   desk:
     enabled: false
   conversations:

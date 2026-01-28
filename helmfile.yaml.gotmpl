@@ -222,3 +222,31 @@ releases:
       app: docs
     values:
       - values/docs.yaml.gotmpl
+
+  # -------------------------------------------
+  # DRIVE
+  # -------------------------------------------
+  - name: drive
+    namespace: lasuite-drive
+    chart: drive/drive
+    version: {{ .Values.chartVersions.drive | quote }}
+    condition: apps.drive.enabled
+    needs:
+      - lasuite-config/platform-configuration
+      {{- if .Values.postgres.enabled }}
+      - lasuite-postgresql/lasuite-postgresql
+      {{- end }}
+      {{- if .Values.redis.enabled }}
+      - lasuite-redis/redis
+      {{- end }}
+      {{- if .Values.keycloak.enabled }}
+      - lasuite-keycloak/keycloak
+      {{- end }}
+      {{- if .Values.minio.enabled }}
+      - lasuite-minio/minio
+      {{- end }}
+    labels:
+      category: business
+      app: drive
+    values:
+      - values/drive.yaml.gotmpl
