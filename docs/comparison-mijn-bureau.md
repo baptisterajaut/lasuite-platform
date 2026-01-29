@@ -1,8 +1,8 @@
-# Comparison: suite-helmfile vs mijn-bureau-infra
+# Comparison: lasuite-platform vs mijn-bureau-infra
 
 Two open-source projects deploying La Suite on Kubernetes with different philosophies.
 
-| | **suite-helmfile** | **mijn-bureau-infra** |
+| | **lasuite-platform** | **mijn-bureau-infra** |
 |---|---|---|
 | **Maintainer** | DINUM (France) | MinBZK (Netherlands) |
 | **Repository** | This repo | [MinBZK/mijn-bureau-infra](https://github.com/MinBZK/mijn-bureau-infra) |
@@ -10,7 +10,7 @@ Two open-source projects deploying La Suite on Kubernetes with different philoso
 
 ## Quick Comparison
 
-| Aspect | suite-helmfile | mijn-bureau-infra |
+| Aspect | lasuite-platform | mijn-bureau-infra |
 |--------|----------------|-------------------|
 | **Goal** | Simple reference deployment | Production-grade platform |
 | **Local setup** | One command (`./init.sh`) | Manual configuration |
@@ -24,7 +24,7 @@ Two open-source projects deploying La Suite on Kubernetes with different philoso
 
 ## Architecture
 
-### suite-helmfile
+### lasuite-platform
 
 ```
 helmfile.yaml.gotmpl
@@ -81,7 +81,7 @@ helmfile.yaml.gotmpl
 
 ## DevOps Tooling
 
-| Tool | suite-helmfile | mijn-bureau-infra |
+| Tool | lasuite-platform | mijn-bureau-infra |
 |------|----------------|-------------------|
 | **UpdateCli** | No | Yes - auto PRs for version bumps |
 | **OPA Policies** | No | Yes - security validation |
@@ -93,7 +93,7 @@ helmfile.yaml.gotmpl
 
 ## Applications
 
-| App | suite-helmfile | mijn-bureau-infra |
+| App | lasuite-platform | mijn-bureau-infra |
 |-----|----------------|-------------------|
 | Docs | Yes | Yes |
 | Meet | Yes | Yes |
@@ -111,7 +111,7 @@ helmfile.yaml.gotmpl
 
 ## When to Use Which
 
-### Choose suite-helmfile if:
+### Choose lasuite-platform if:
 
 - You want to **try La Suite quickly** on a local cluster
 - You need a **simple reference** to understand the deployment
@@ -132,31 +132,31 @@ helmfile.yaml.gotmpl
 
 ### Infrastructure Isolation
 
-**suite-helmfile**: All apps share one PostgreSQL instance with separate databases. Simpler, fewer resources, but less isolation.
+**lasuite-platform**: All apps share one PostgreSQL instance with separate databases. Simpler, fewer resources, but less isolation.
 
 **mijn-bureau-infra**: In demo mode, each app gets its own PostgreSQL/Redis/MinIO. More resources, but better isolation for production.
 
 ### Chart Management
 
-**suite-helmfile**: Uses remote charts from official repos. Simpler updates, but dependent on upstream availability.
+**lasuite-platform**: Uses remote charts from official repos. Simpler updates, but dependent on upstream availability.
 
 **mijn-bureau-infra**: Vendors charts locally in `apps/<app>/charts/`. More control, can patch issues, but requires manual sync with upstream.
 
 ### Configuration Philosophy
 
-**suite-helmfile**: One environment file (`environments/local.yaml`) with all settings. Easy to understand, quick to modify.
+**lasuite-platform**: One environment file (`environments/local.yaml`) with all settings. Easy to understand, quick to modify.
 
 **mijn-bureau-infra**: 20+ modular files (ai.yaml, security.yaml, database.yaml...). Better separation of concerns, but steeper learning curve.
 
 ### Secret Management
 
-**suite-helmfile**: `deriveSecret` generates secrets from a single seed. No encryption at rest.
+**lasuite-platform**: `deriveSecret` generates secrets from a single seed. No encryption at rest.
 
 **mijn-bureau-infra**: `derivePassword` (similar) plus SOPS for encrypted secrets in git.
 
 ## Migration Path
 
-Starting with suite-helmfile and need to scale up? Here's what to adopt from mijn-bureau-infra:
+Starting with lasuite-platform and need to scale up? Here's what to adopt from mijn-bureau-infra:
 
 1. **UpdateCli** - Add automatic version bump PRs
 2. **OPA Policies** - Add security validation to CI
@@ -165,6 +165,6 @@ Starting with suite-helmfile and need to scale up? Here's what to adopt from mij
 
 ## Links
 
-- **suite-helmfile**: (this repository)
+- **lasuite-platform**: (this repository)
 - **mijn-bureau-infra**: https://github.com/MinBZK/mijn-bureau-infra
 - **Documentation**: https://minbzk.github.io/mijn-bureau-infra/
