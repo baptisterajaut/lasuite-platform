@@ -110,3 +110,16 @@ grep secretSeed conf/local/secrets.conf | cut -d'"' -f2 | xargs -I{} sh -c 'echo
 - [Advanced Deployment](docs/advanced-deployment.md) - External PostgreSQL/Keycloak, production setup
 - [Architecture Decisions](docs/decisions.md) - Why things are the way they are
 - [Known Limitations](docs/known-limitations.md) - Current limitations and workarounds
+
+## Looking for Production-Ready?
+
+This project prioritizes simplicity over completeness. If you need a production-grade platform with:
+
+- Automatic version updates (UpdateCli)
+- Security policy validation (OPA/Rego)
+- Per-application infrastructure isolation
+- Additional apps (Nextcloud, Element/Matrix, Collabora, Grist, Ollama)
+
+Check out [MinBZK/mijn-bureau-infra](https://github.com/MinBZK/mijn-bureau-infra) - a more sophisticated helmfile maintained by the Dutch government that also deploys La Suite apps.
+
+See [comparison](docs/comparison-mijn-bureau.md) for details.

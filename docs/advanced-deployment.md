@@ -306,6 +306,8 @@ secretOverrides:
 
 ## Production Deployment
 
+> **Alternative**: For a more comprehensive production setup with UpdateCli, OPA policies, and per-app isolation, consider [MinBZK/mijn-bureau-infra](https://github.com/MinBZK/mijn-bureau-infra). See [comparison](comparison-mijn-bureau.md).
+
 ### 1. Run the init script
 
 ```bash
