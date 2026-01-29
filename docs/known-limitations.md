@@ -46,6 +46,17 @@ When using self-signed certificates (local development), Meet requires `LIVEKIT_
 
 ## S3 / Object Storage
 
+### No Shared Storage Between Apps
+
+Each app has its own isolated S3 bucket:
+
+- `docs-media-storage` for Docs
+- `drive-media-storage` for Drive
+
+There is no integration between Docs and Drive. You cannot open a Docs document from Drive or save a document to Drive from Docs.
+
+**Note**: Drive exposes a [Resource Server API](https://github.com/suitenumerique/drive/blob/main/docs/resource_server.md) (`/external_api/v1.0/*`) that could allow other apps to access files, but Docs does not implement a client for this API.
+
 ### MinIO is Development Only
 
 MinIO is provided for local development convenience. Do not use in production. Use AWS S3, OOS (Outscale), or another S3-compatible service.
