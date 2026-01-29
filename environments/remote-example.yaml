@@ -1,5 +1,5 @@
-domain: suite.example.com
-adminEmail: admin@example.com
+domain: __DOMAIN__
+adminEmail: __ADMIN_EMAIL__
 
 apps:
   docs:
@@ -31,14 +31,22 @@ redis:
   port: 6379
 
 minio:
-  enabled: false
+  enabled: true
+
+livekit:
+  enabled: true
 
 s3:
-  provider: aws  # aws | oos | minio
-  endpoint: https://s3.eu-west-1.amazonaws.com
-  host: s3.eu-west-1.amazonaws.com
-  port: 443
-  # For OOS (Outscale), use:
+  provider: minio
+  endpoint: http://minio.lasuite-minio.svc.cluster.local:9000
+  host: minio.lasuite-minio.svc.cluster.local
+  port: 9000
+  # For production, use AWS S3:
+  # provider: aws
+  # endpoint: https://s3.eu-west-1.amazonaws.com
+  # host: s3.eu-west-1.amazonaws.com
+  # port: 443
+  # For OOS (Outscale):
   # provider: oos
   # endpoint: https://oos.eu-west-2.outscale.com
   # host: oos.eu-west-2.outscale.com
@@ -56,6 +64,6 @@ reflector:
 
 tls:
   issuer: letsencrypt
-  email: admin@example.com
+  email: __ADMIN_EMAIL__
 
 secretSeed: ""
