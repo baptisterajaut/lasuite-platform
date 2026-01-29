@@ -4,9 +4,11 @@ Two open-source projects deploying La Suite on Kubernetes with different philoso
 
 | | **lasuite-platform** | **mijn-bureau-infra** |
 |---|---|---|
-| **Maintainer** | DINUM (France) | MinBZK (Netherlands) |
+| **Maintainer** | Individual (unaffiliated) | MinBZK (Netherlands) |
 | **Repository** | This repo | [MinBZK/mijn-bureau-infra](https://github.com/MinBZK/mijn-bureau-infra) |
-| **License** | MIT | EUPL-1.2 |
+| **License** | None (repo) / MIT (La Suite code) | EUPL-1.2 |
+
+> **Note**: This repository is maintained by an individual with no affiliation to DINUM or the French government. La Suite applications themselves are developed and maintained by DINUM under the MIT license.
 
 ## Quick Comparison
 
