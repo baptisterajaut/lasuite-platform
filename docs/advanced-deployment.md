@@ -39,6 +39,8 @@ Identifiers used:
 |------------|-------|
 | `postgres-admin` | PostgreSQL admin password |
 | `postgres` | PostgreSQL app user password |
+| `keycloak-db` | Keycloak database password |
+| `keycloak-admin` | Keycloak admin console password |
 | `docs-db` | Docs DB password |
 | `meet-db` | Meet DB password |
 | `drive-db` | Drive DB password |
@@ -127,6 +129,8 @@ This means you can mix derived and custom secrets:
 |------------|----------|
 | `postgres-admin` | PostgreSQL superuser |
 | `postgres` | PostgreSQL app user |
+| `keycloak-db` | Keycloak database password |
+| `keycloak-admin` | Keycloak admin console password |
 | `docs-db` | Docs database password |
 | `meet-db` | Meet database password |
 | `drive-db` | Drive database password |

@@ -2,11 +2,40 @@
 
 This document explains why certain things are the way they are.
 
-## La Suite Numerique Repositories
+## Differences with official installation methods
+
+Each La Suite application (Docs, Meet, Drive) has its own Kubernetes installation guide. This helmfile takes a different approach.
+
+| Aspect | Official docs | This helmfile |
+|--------|---------------|---------------|
+| Ingress | nginx-ingress (required) | HAProxy |
+| TLS | mkcert (dev tool) | cert-manager with ClusterIssuers |
+| Domain names | nip.io (third-party service) | /etc/hosts or real DNS |
+| Test cluster | Kind (specific setup) | Any cluster (Rancher Desktop, cloud, etc.) |
+| Deployment | Multiple `helm install` commands | Single `helmfile sync` |
+| Configuration | Separate guide per app | Unified configuration |
+| Backend charts | helm-dev-backend wrapper | Official charts (Bitnami, codecentric) |
+
+**Standard tools over custom solutions**: official docs use `mkcert` for local TLS, which works but is a dev-only tool. This helmfile uses `cert-manager` with ClusterIssuers - same pattern for dev (selfsigned) and prod (Let's Encrypt).
+
+**Unified deployment**: instead of following separate installation guides for Docs, Meet, and Drive, you configure which apps to enable and run `helmfile sync`. Shared infrastructure (PostgreSQL, Redis, Keycloak) is configured once.
+
+**Minimal third-party dependencies**: official docs use `*.127.0.0.1.nip.io` which routes DNS queries through a third-party service with unknown privacy practices. This helmfile uses `/etc/hosts` entries - no external service involved.
+
+### When to use official docs instead
+
+The official guides are better if you:
+- Want to deploy a single app only
+- Already have nginx-ingress and prefer to keep it
+- Need the exact setup used by the La Suite team for debugging
+
+---
+
+## La Suite numerique repositories
 
 The [suitenumerique](https://github.com/suitenumerique) GitHub organization contains many repositories. Here's a complete breakdown:
 
-### Applications with Helm Charts (Included)
+### Applications with Helm charts (included)
 
 | App | Repo | Status | Description |
 |-----|------|--------|-------------|
@@ -16,7 +45,7 @@ The [suitenumerique](https://github.com/suitenumerique) GitHub organization cont
 | **Desk** | `people` | Disabled | Team/user management |
 | **Conversations** | `conversations` | Disabled | AI chatbot (requires LLM) |
 
-### Applications Without Helm Charts
+### Applications without Helm charts
 
 | App | Repo | Stack | Why Not Included |
 |-----|------|-------|------------------|
@@ -25,7 +54,7 @@ The [suitenumerique](https://github.com/suitenumerique) GitHub organization cont
 | **Calc** | `calc` | Docker only | No Helm chart. Prototype collaborative spreadsheet - not production ready. |
 | **Messagerie** | `messagerie` | Email infra | Not a web app. Postfix/Dovecot/OpenXChange email infrastructure. |
 
-### Meet Auxiliary Services
+### Meet auxiliary services
 
 | Service | Repo | Why Not Included |
 |---------|------|------------------|
@@ -33,7 +62,7 @@ The [suitenumerique](https://github.com/suitenumerique) GitHub organization cont
 | **WhisperX** | `meet-whisperx` | Transcription service. Requires GPU, complex setup. |
 | **Moshi STT** | `meet-kyutai-moshi-stt` | Speech-to-text. Requires GPU, experimental. |
 
-### La Suite Territoriale
+### La Suite territoriale
 
 These are specific to "La Suite territoriale" (local government variant):
 
@@ -43,7 +72,7 @@ These are specific to "La Suite territoriale" (local government variant):
 | `st-deploycenter` | App management console | Operator tooling, not end-user app |
 | `st-ansible` | Ansible collection | Different deployment method |
 
-### Libraries and SDKs (Not Deployable)
+### Libraries and SDKs (not deployable)
 
 | Repo | Type | Description |
 |------|------|-------------|
@@ -55,7 +84,7 @@ These are specific to "La Suite territoriale" (local government variant):
 | `integration` | API/Templates | Common UI templates |
 | `buildpack` | Buildpack | For PaaS deployments (Scalingo, Heroku) |
 
-### Infrastructure and Reference
+### Infrastructure and reference
 
 | Repo | Description |
 |------|-------------|
@@ -74,9 +103,9 @@ These are specific to "La Suite territoriale" (local government variant):
 
 ---
 
-## Applications Not Included (Details)
+## Applications not included (details)
 
-### Tchap (Messaging)
+### Tchap (messaging)
 
 Tchap is the French government's Matrix-based messaging platform (not in `suitenumerique` org, lives in `tchapgouv`). It is **not included yet** because:
 
@@ -94,7 +123,7 @@ Tchap is the French government's Matrix-based messaging platform (not in `suiten
 
 If you need messaging now, consider deploying Tchap separately or using an existing Matrix homeserver.
 
-### Projects (Project Management)
+### Projects (project management)
 
 Projects is a Kanban/project management app. It is **not included** because:
 
@@ -102,14 +131,14 @@ Projects is a Kanban/project management app. It is **not included** because:
 - **Different stack** - Node.js/Sails.js instead of Django
 - **Would require custom chart** - Relatively simple to create, but not prioritized
 
-### Calc (Spreadsheets)
+### Calc (spreadsheets)
 
 Calc is a collaborative spreadsheet app. It is **not included** because:
 
 - **Prototype status** - Not production ready
 - **No Helm chart** - Only Dockerfile available
 
-### Messagerie (Email)
+### Messagerie (email)
 
 Messagerie is **not included** because:
 
@@ -117,7 +146,7 @@ Messagerie is **not included** because:
 - **Managed separately** - Infrastructure is handled via `gitlab.mim-libre.fr/dimail`
 - **Different deployment model** - Email servers have very different requirements than web apps
 
-### Messages (Collaborative Inbox)
+### Messages (collaborative inbox)
 
 Messages is a collaborative inbox for teams. It is **not included** because:
 
@@ -126,11 +155,11 @@ Messages is a collaborative inbox for teams. It is **not included** because:
 
 ---
 
-## External Apps Worth Considering
+## External apps worth considering
 
 These are not part of La Suite Numerique but could complement it:
 
-### Grist (Spreadsheets)
+### Grist (spreadsheets)
 
 [Grist](https://github.com/gristlabs/grist-core) is an open-source alternative to Google Sheets/Airtable. It could replace the prototype `calc` app.
 
@@ -140,7 +169,7 @@ These are not part of La Suite Numerique but could complement it:
 
 **Future consideration**: Could be added to this helmfile as an optional component.
 
-### France Transfert (File Transfer)
+### France Transfert (file transfer)
 
 A WeTransfer-like service for large file transfers. **Not open source** - managed internally by DINUM.
 
@@ -149,9 +178,9 @@ Alternatives if needed:
 - [Send](https://github.com/timvisee/send) - Firefox Send fork
 - [Lufi](https://framagit.org/fiat-tux/hat-softwares/lufi) - Encrypted file upload
 
-## Features Disabled by Default
+## Features disabled by default
 
-### Meet: AI Features (Transcription, Summarization)
+### Meet: AI features (transcription, summarization)
 
 Meet has built-in AI features for transcribing and summarizing meetings. These are **disabled** because:
 
@@ -164,7 +193,7 @@ To enable AI features, you would need to:
 2. Deploy an LLM for summarization
 3. Configure `summary.replicas`, `celeryTranscribe.replicas`, `celerySummarize.replicas` in Meet values
 
-### Meet: Recording
+### Meet: recording
 
 Recording is **disabled** because:
 
@@ -172,7 +201,7 @@ Recording is **disabled** because:
 - **Requires LiveKit Egress** - Additional LiveKit component for recording
 - **Complex setup** - Involves webhooks, storage configuration, and egress deployment
 
-### Conversations: LLM Backend
+### Conversations: LLM backend
 
 Conversations (AI chatbot) is **disabled by default** because:
 
@@ -185,7 +214,7 @@ To enable Conversations:
 2. Set `apps.conversations.enabled: true`
 3. Configure LLM endpoint in Conversations values
 
-### Desk (People): Team Management
+### Desk (People): team management
 
 Desk is **disabled by default** because:
 
@@ -193,9 +222,9 @@ Desk is **disabled by default** because:
 - **Useful for multi-tenant setups** - Adds value when managing multiple teams/organizations
 - **Early stage** - Chart is still v0.0.7
 
-## Infrastructure Choices
+## Infrastructure choices
 
-### MinIO: Development Only
+### MinIO: development only
 
 MinIO is provided **only for local development**. In production:
 
@@ -203,7 +232,7 @@ MinIO is provided **only for local development**. In production:
 - **MinIO lacks HA** - Single-node MinIO is not production-ready
 - **Cost** - Cloud S3 is often cheaper than self-hosted MinIO at scale
 
-### S3 Provider Support
+### S3 provider support
 
 The `s3.provider` setting configures S3-specific compatibility:
 
@@ -223,7 +252,7 @@ We use HAProxy instead of nginx-ingress because:
 - **Better WebSocket support** - Native WebSocket handling without special configuration
 - **Consistent with production setups** - Many organizations already use HAProxy
 
-### Keycloak: Always Deployed
+### Keycloak: always deployed
 
 Even when using external identity providers, we deploy our own Keycloak because:
 
@@ -232,7 +261,7 @@ Even when using external identity providers, we deploy our own Keycloak because:
 - **Avoids conflicts** - `lasuite-keycloak` namespace won't conflict with other Keycloaks on the cluster
 - **Test user support** - Easy to create test users for local development
 
-### Redis: Shared Instance
+### Redis: shared instance
 
 All apps share a single Redis instance (with different DB numbers) because:
 
@@ -247,7 +276,7 @@ DB number allocation:
 - `3`: Drive Celery
 - `4`: Meet cache
 
-### PostgreSQL: One Database Per App
+### PostgreSQL: one database per app
 
 Each app gets its own database (not just schema) because:
 
@@ -256,7 +285,34 @@ Each app gets its own database (not just schema) because:
 - **Backup flexibility** - Can backup/restore individual app data
 - **Django convention** - Django apps expect their own database
 
-### TLS Certificates
+### Helmfile over Flux/ArgoCD
+
+We use [Helmfile](https://github.com/helmfile/helmfile) instead of GitOps tools like Flux or ArgoCD because:
+
+- **Simplicity** - Helmfile is a single binary that wraps Helm, no cluster operators needed
+- **Lower barrier to entry** - No need to understand CRDs, controllers, or reconciliation loops
+- **Example-oriented** - This repo is more of a reference implementation than a production-grade deployment platform
+- **Flexibility** - Users can easily adapt and integrate into their existing workflows
+
+This is not a "production-ready platform-as-a-service". It's a working example showing how to deploy La Suite on Kubernetes. Organizations with mature GitOps practices can use this as a reference to build their own Flux/ArgoCD configurations.
+
+### No monitoring stack
+
+This helmfile does **not include** monitoring components (Prometheus, Grafana, Loki, etc.) because:
+
+- **Cluster admin responsibility** - Monitoring is typically managed at the cluster level, not per-application
+- **Avoid duplication** - Most Kubernetes clusters already have monitoring in place
+- **Scope limitation** - Adding monitoring would significantly increase complexity
+- **Different requirements** - Organizations have varying monitoring preferences and existing tooling
+
+If you need monitoring, consider:
+- **Existing cluster monitoring** - Use your cluster's Prometheus/Grafana
+- **Cloud-native solutions** - AWS CloudWatch, GCP Cloud Monitoring, Datadog, etc.
+- **Separate deployment** - Deploy kube-prometheus-stack independently
+
+The La Suite applications expose standard metrics endpoints where applicable.
+
+### TLS certificates
 
 Two modes are supported via `tls.issuer`:
 
@@ -269,9 +325,9 @@ Two modes are supported via `tls.issuer`:
 
 **Let's Encrypt mode** uses ACME HTTP-01 challenge via the HAProxy ingress controller.
 
-## Secret Management
+## Secret management
 
-### Deterministic Secrets from Seed
+### Deterministic secrets from seed
 
 All secrets are derived from a single `secretSeed` using SHA256 because:
 

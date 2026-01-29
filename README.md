@@ -1,6 +1,19 @@
 # Suite Helmfile
 
-Helmfile to deploy [La Suite numerique](https://github.com/suitenumerique) on Kubernetes.
+Reference [Helmfile](https://github.com/helmfile/helmfile) to deploy [La Suite numerique](https://github.com/suitenumerique) on Kubernetes.
+
+> **Note**: This is an example repository for learning and adaptation, not a production-ready platform. Monitoring, GitOps, and advanced HA configurations are left to the deploying organization. See [Architecture Decisions](docs/decisions.md) for rationale.
+
+### Differences with official docs
+
+Each app has its own Kubernetes installation guide. This helmfile provides:
+
+- **Unified deployment** - one config for all apps instead of following N separate guides
+- **Standard tools** - cert-manager and HAProxy instead of mkcert and nginx-specific setup
+- **Minimal third-party dependencies** - `/etc/hosts` instead of nip.io, no external DNS service
+- **Single command** - `helmfile sync` instead of multiple `helm install` commands
+
+See [detailed comparison](docs/decisions.md#differences-with-official-installation-methods).
 
 ## Applications
 
