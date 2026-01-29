@@ -132,8 +132,7 @@ backend:
     LOGIN_REDIRECT_URL: https://drive.{{ .Values.domain }}
     LOGIN_REDIRECT_URL_FAILURE: https://drive.{{ .Values.domain }}
     LOGOUT_REDIRECT_URL: https://drive.{{ .Values.domain }}
-    # Frontend config (served via /api/config/)
-    # Disable gaufre as URLs are hardcoded to gouv.fr instances
+    # Disable waffle menu (see docs/known-limitations.md)
     FRONTEND_HIDE_GAUFRE: "True"
 
 # Frontend

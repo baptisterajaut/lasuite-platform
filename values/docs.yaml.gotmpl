@@ -67,43 +67,36 @@ serviceMedia:
 backend:
   replicas: 1
 
-  # Theme customization for waffle (app navigation menu)
-  themeCustomization:
-    enabled: true
-    file_content: |
-      {
-        "waffle": {
-          "data": {
-            "services": [
-              {
-                "name": "Docs",
-                "url": "https://docs.{{ .Values.domain }}/",
-                "maturity": "stable",
-                "logo": "https://lasuite.numerique.gouv.fr/assets/products/docs.svg"
-              }
-              {{- if .Values.apps.drive.enabled }},
-              {
-                "name": "Fichiers",
-                "url": "https://drive.{{ .Values.domain }}/",
-                "maturity": "stable",
-                "logo": "https://lasuite.numerique.gouv.fr/assets/products/fichiers.svg"
-              }
-              {{- end }}
-              {{- if .Values.apps.meet.enabled }},
-              {
-                "name": "Visio",
-                "url": "https://meet.{{ .Values.domain }}/",
-                "maturity": "stable",
-                "logo": "https://lasuite.numerique.gouv.fr/assets/products/visio.svg"
-              }
-              {{- end }}
-            ]
-          },
-          "showMoreLimit": 9
-        }
-      }
+  # Waffle menu customization (Docs >= 4.5.0, not yet released)
+  # See docs/known-limitations.md for details
+  # themeCustomization:
+  #   enabled: true
+  #   file_content:
+  #     waffle:
+  #       widgetPath: https://static.suite.anct.gouv.fr/widgets/lagaufre.js
+  #       data:
+  #         services:
+  #           - name: Docs
+  #             url: https://docs.{{ .Values.domain }}/
+  #             maturity: stable
+  #             logo: https://lasuite.numerique.gouv.fr/assets/products/docs.svg
+  #           {{- if .Values.apps.drive.enabled }}
+  #           - name: Fichiers
+  #             url: https://drive.{{ .Values.domain }}/
+  #             maturity: stable
+  #             logo: https://lasuite.numerique.gouv.fr/assets/products/fichiers.svg
+  #           {{- end }}
+  #           {{- if .Values.apps.meet.enabled }}
+  #           - name: Visio
+  #             url: https://meet.{{ .Values.domain }}/
+  #             maturity: stable
+  #             logo: https://lasuite.numerique.gouv.fr/assets/products/visio.svg
+  #           {{- end }}
+  #       showMoreLimit: 9
 
   envVars:
+    # Enables waffle menu with DSFR theme (see docs/known-limitations.md)
+    FRONTEND_THEME: dsfr
     # Django admin
     DJANGO_SUPERUSER_EMAIL: {{ .Values.adminEmail }}
     DJANGO_SUPERUSER_PASSWORD:

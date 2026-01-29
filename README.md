@@ -109,3 +109,4 @@ grep secretSeed conf/local/secrets.conf | cut -d'"' -f2 | xargs -I{} sh -c 'echo
 
 - [Advanced Deployment](docs/advanced-deployment.md) - External PostgreSQL/Keycloak, production setup
 - [Architecture Decisions](docs/decisions.md) - Why things are the way they are
+- [Known Limitations](docs/known-limitations.md) - Current limitations and workarounds
