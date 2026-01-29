@@ -115,14 +115,14 @@ helmfile.yaml.gotmpl
 
 ### Choose lasuite-platform if:
 
-- You want to **try La Suite quickly** on a local cluster
-- You need a **simple reference** to understand the deployment
-- You're building your **own production setup** and need a starting point
-- You prefer **less complexity** over more features
-- You only need **La Suite apps** (not Nextcloud, Element, etc.)
+- You just are **testing basic La Suite features**
+- You want a simple **reference starting point** for your own deployment
+- ~~You like to play with fire~~
 
 ### Choose mijn-bureau-infra if:
 
+- You know what you're doing
+- You are a serious person
 - You need a **production-ready platform** with security policies
 - You want **automatic version updates** via UpdateCli
 - You need **per-app isolation** for compliance
