@@ -15,7 +15,7 @@ generate_seed() {
 }
 
 echo ""
-echo "=== La Suite Helmfile - Setup ==="
+echo "=== La Suite Platform - Setup ==="
 echo ""
 echo "1) Local development (suite.local)"
 echo "2) Remote deployment"

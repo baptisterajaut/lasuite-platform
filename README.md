@@ -1,4 +1,4 @@
-# Suite Helmfile
+# La Suite Platform
 
 Reference [Helmfile](https://github.com/helmfile/helmfile) to deploy [La Suite numerique](https://github.com/suitenumerique) on Kubernetes.
 
