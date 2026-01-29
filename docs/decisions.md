@@ -248,9 +248,9 @@ The `s3.provider` setting configures S3-specific compatibility:
 
 We use HAProxy instead of nginx-ingress because:
 
+- **nginx-ingress is deprecated** - End of support scheduled for March 2026
 - **La Suite charts default to nginx** - But annotations are easily mapped to HAProxy
 - **Better WebSocket support** - Native WebSocket handling without special configuration
-- **Consistent with production setups** - Many organizations already use HAProxy
 
 ### Keycloak: always deployed
 
@@ -336,16 +336,12 @@ All secrets are derived from a single `secretSeed` using SHA256 because:
 - **No external dependencies** - No need for Vault, SOPS, or external secret managers
 - **Easy rotation** - Change the seed, redeploy, update external systems
 
-This approach is inspired by `pa-helm-deploy` which uses the same pattern.
+### No secret management
 
-### No SOPS
-
-Unlike `pa-helm-deploy`, this project does **not use SOPS** because:
+This project does not include secret management tooling because:
 
 - **No sensitive secrets in repo** - The `secretSeed` is in `.gitignore`
-- **Simpler setup** - No need for GPG keys or cloud KMS
-- **Derived secrets** - Everything is computed from the seed at deploy time
+- **Derived secrets** - Internal secrets are computed from the seed at deploy time
+- **Simpler setup** - No additional tooling required to get started
 
-For production, you may want to add SOPS for:
-- External API keys (LLM providers, external services)
-- Custom credentials that cannot be derived from seed
+For production, if you need to store secrets that cannot be derived (external API keys, custom credentials), consider using [SOPS](https://github.com/getsops/sops) to encrypt `conf/<env>/secret-overrides.conf`. SOPS integrates well with git and requires minimal setup (GPG or cloud KMS).
