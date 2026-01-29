@@ -64,6 +64,15 @@ The script will ask for:
 
 It creates the configuration files. Review them before deploying.
 
+### Firewall (Meet/LiveKit)
+
+LiveKit uses `hostNetwork` by default to expose WebRTC ports directly on nodes. Open these ports:
+
+- **UDP 50000-60000** - WebRTC media
+- **TCP 7881** - WebRTC TCP fallback
+
+To disable hostNetwork (requires cloud LoadBalancer with UDP or TURN relay), set `podHostNetwork: false` in `values/livekit.yaml.gotmpl`.
+
 ## Access (Local)
 
 | Service | URL | Credentials |

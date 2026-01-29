@@ -3,6 +3,10 @@
 replicaCount: 1
 terminationGracePeriodSeconds: 3600
 
+# hostNetwork exposes RTC ports (UDP 50000-60000, TCP 7881) directly on the node
+# Set to false if using a cloud LoadBalancer with UDP support or TURN relay
+podHostNetwork: true
+
 livekit:
   keys:
     {{ template "lk-key" (list .Values.secretSeed "livekit-api-key") }}: {{ template "lk-secret" (list .Values.secretSeed "livekit-api-secret") }}
