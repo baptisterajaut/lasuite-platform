@@ -45,8 +45,8 @@ Identifiers used:
 | `meet-db` | Meet DB password |
 | `drive-db` | Drive DB password |
 | `redis` | Redis password |
-| `minio-access` | MinIO/S3 access key |
-| `minio-secret` | MinIO/S3 secret key |
+| `s3-access` | S3 access key |
+| `s3-secret` | S3 secret key |
 | `docs-oidc-client` | Docs OIDC client secret |
 | `meet-oidc-client` | Meet OIDC client secret |
 | `drive-oidc-client` | Drive OIDC client secret |
@@ -73,8 +73,8 @@ secretOverrides:
   drive-db: "my_existing_drive_password"
 
   # S3 credentials
-  minio-access: "AKIAIOSFODNN7EXAMPLE"
-  minio-secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+  s3-access: "AKIAIOSFODNN7EXAMPLE"
+  s3-secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 
   # OIDC client secrets (from your Keycloak)
   docs-oidc-client: "existing-client-secret-for-docs"
@@ -108,8 +108,8 @@ secretSeed: "your_seed_here"
 
 secretOverrides:
   docs-db: "my_custom_password"
-  minio-access: "AKIA..."
-  minio-secret: "..."
+  s3-access: "AKIA..."
+  s3-secret: "..."
 ```
 
 ### How It Works
@@ -135,8 +135,8 @@ This means you can mix derived and custom secrets:
 | `meet-db` | Meet database password |
 | `drive-db` | Drive database password |
 | `redis` | Redis password |
-| `minio-access` | S3 access key |
-| `minio-secret` | S3 secret key |
+| `s3-access` | S3 access key |
+| `s3-secret` | S3 secret key |
 | `docs-oidc-client` | Docs OIDC client secret |
 | `meet-oidc-client` | Meet OIDC client secret |
 | `drive-oidc-client` | Drive OIDC client secret |
@@ -298,8 +298,8 @@ In `conf/my-env/secret-overrides.conf`:
 
 ```yaml
 secretOverrides:
-  minio-access: "AKIAIOSFODNN7EXAMPLE"
-  minio-secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+  s3-access: "AKIAIOSFODNN7EXAMPLE"
+  s3-secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 ```
 
 ---

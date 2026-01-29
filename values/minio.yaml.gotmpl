@@ -3,8 +3,8 @@
 mode: standalone
 replicas: 1
 
-rootUser: {{ template "secret" (list .Values.secretSeed "minio-access") }}
-rootPassword: {{ template "secret" (list .Values.secretSeed "minio-secret") }}
+rootUser: {{ template "secret" (list .Values.secretSeed "s3-access") }}
+rootPassword: {{ template "secret" (list .Values.secretSeed "s3-secret") }}
 
 persistence:
   enabled: true
