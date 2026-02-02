@@ -66,4 +66,5 @@ tls:
   issuer: letsencrypt
   email: __ADMIN_EMAIL__
 
-secretSeed: ""
+# Generate with: openssl rand -hex 24
+secretSeed: "REPLACE_ME"

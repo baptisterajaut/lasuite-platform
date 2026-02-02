@@ -4,7 +4,13 @@ Reference [Helmfile](https://github.com/helmfile/helmfile) to deploy [La Suite n
 
 > **Note**: This is an example repository for learning and adaptation, not a production-ready platform. Monitoring, GitOps, and advanced HA configurations are left to the deploying organization. See [Architecture Decisions](docs/decisions.md) for rationale.
 
-### Differences with official docs
+## Looking for Production-Ready?
+
+If you need a production-grade platform with automatic updates, security policies, and per-app isolation, check out [MinBZK/mijn-bureau-infra](https://github.com/MinBZK/mijn-bureau-infra) - a more sophisticated helmfile maintained by the Dutch government.
+
+This project is for you if you want a **simpler starting point** to understand La Suite deployment, or need a **blank slate** to build your own infrastructure on top. See [comparison](docs/comparison-mijn-bureau.md) for details.
+
+## Differences with official docs
 
 Each app has its own Kubernetes installation guide. This helmfile provides:
 
@@ -46,8 +52,8 @@ See [detailed comparison](docs/decisions.md#differences-with-official-installati
 The interactive script will:
 1. Check prerequisites (helm, kubectl, helmfile)
 2. Generate a random secret seed
-3. Show the `/etc/hosts` line to add
-4. Run `helmfile sync` automatically
+3. Run `helmfile sync` automatically
+4. Detect the LoadBalancer IP and show the `/etc/hosts` line to add
 5. Extract the CA certificate to `lasuite-ca.pem`
 
 ### Remote Deployment
@@ -102,7 +108,7 @@ sudo update-ca-certificates
 ### Keycloak Admin Password
 
 ```bash
-grep secretSeed conf/local/secrets.conf | cut -d'"' -f2 | xargs -I{} sh -c 'echo -n "{}:keycloak-admin" | shasum -a 256 | cut -c1-50'
+grep secretSeed environments/local.yaml | cut -d'"' -f2 | xargs -I{} sh -c 'echo -n "{}:keycloak-admin" | shasum -a 256 | cut -c1-50'
 ```
 
 ## Documentation
@@ -110,16 +116,4 @@ grep secretSeed conf/local/secrets.conf | cut -d'"' -f2 | xargs -I{} sh -c 'echo
 - [Advanced Deployment](docs/advanced-deployment.md) - External PostgreSQL/Keycloak, production setup
 - [Architecture Decisions](docs/decisions.md) - Why things are the way they are
 - [Known Limitations](docs/known-limitations.md) - Current limitations and workarounds
-
-## Looking for Production-Ready?
-
-This project prioritizes simplicity over completeness. If you need a production-grade platform with:
-
-- Automatic version updates (UpdateCli)
-- Security policy validation (OPA/Rego)
-- Per-application infrastructure isolation
-- Additional apps (Nextcloud, Element/Matrix, Collabora, Grist, Ollama)
-
-Check out [MinBZK/mijn-bureau-infra](https://github.com/MinBZK/mijn-bureau-infra) - a more sophisticated helmfile maintained by the Dutch government that also deploys La Suite apps.
-
-See [comparison](docs/comparison-mijn-bureau.md) for details.
+- [Comparison with mijn-bureau-infra](docs/comparison-mijn-bureau.md) - When to use which

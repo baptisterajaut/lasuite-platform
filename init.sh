@@ -1,6 +1,5 @@
 #!/bin/bash
 set -e
-shopt -s inherit_errexit
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -26,8 +25,8 @@ read -rp "Choice [1/2]: " CHOICE
 case ${CHOICE} in
     1)
         ENV_NAME="local"
-        CONF_DIR="${SCRIPT_DIR}/conf/${ENV_NAME}"
-        SECRETS_FILE="${CONF_DIR}/secrets.conf"
+        ENV_FILE="${SCRIPT_DIR}/environments/${ENV_NAME}.yaml"
+        TEMPLATE_FILE="${SCRIPT_DIR}/environments/${ENV_NAME}.yaml.example"
 
         check_command helm
         check_command kubectl
@@ -38,25 +37,41 @@ case ${CHOICE} in
             exit 1
         fi
 
-        if [[ -f "${SECRETS_FILE}" ]]; then
-            echo "secrets.conf already exists. Delete it to regenerate."
+        if [[ -f "${ENV_FILE}" ]]; then
+            echo "${ENV_FILE} already exists. Delete it to regenerate."
             exit 1
         fi
 
-        mkdir -p "${CONF_DIR}"
         SEED="$(generate_seed)"
-        cat > "${SECRETS_FILE}" << EOF
-secretSeed: "${SEED}"
-EOF
-        echo "Created ${SECRETS_FILE}"
-        echo ""
-        echo "Add to /etc/hosts:"
-        echo "127.0.0.1  docs.suite.local meet.suite.local drive.suite.local desk.suite.local auth.suite.local minio.suite.local livekit.suite.local"
+        sed "s/secretSeed: \"REPLACE_ME\"/secretSeed: \"${SEED}\"/" \
+            "${TEMPLATE_FILE}" > "${ENV_FILE}"
+        echo "Created ${ENV_FILE}"
         echo ""
         read -rp "Press Enter to deploy..."
 
         cd "${SCRIPT_DIR}"
         helmfile -e local sync
+
+        # Get LoadBalancer IP
+        echo ""
+        echo "Waiting for LoadBalancer IP..."
+        LB_IP=""
+        for i in {1..30}; do
+            LB_IP=$(kubectl get svc haproxy-ingress-kubernetes-ingress -n haproxy-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
+            if [[ -n "${LB_IP}" ]]; then
+                break
+            fi
+            sleep 2
+        done
+
+        if [[ -z "${LB_IP}" ]]; then
+            LB_IP="127.0.0.1"
+            echo "Could not detect LoadBalancer IP, defaulting to ${LB_IP}"
+        fi
+
+        echo ""
+        echo "Add to /etc/hosts:"
+        echo "${LB_IP}  docs.suite.local meet.suite.local drive.suite.local desk.suite.local auth.suite.local minio.suite.local livekit.suite.local"
 
         # Extract CA certificate
         CA_FILE="${SCRIPT_DIR}/lasuite-ca.pem"
@@ -72,29 +87,24 @@ EOF
         read -rp "Domain: " DOMAIN
         read -rp "Admin email: " ADMIN_EMAIL
 
-        CONF_DIR="${SCRIPT_DIR}/conf/${ENV_NAME}"
         ENV_FILE="${SCRIPT_DIR}/environments/${ENV_NAME}.yaml"
-        SECRETS_FILE="${CONF_DIR}/secrets.conf"
         TEMPLATE_FILE="${SCRIPT_DIR}/environments/remote-example.yaml"
 
-        mkdir -p "${CONF_DIR}"
-
-        # Copy template and replace placeholders
-        sed -e "s/__DOMAIN__/${DOMAIN}/g" \
-            -e "s/__ADMIN_EMAIL__/${ADMIN_EMAIL}/g" \
-            "${TEMPLATE_FILE}" > "${ENV_FILE}"
+        if [[ -f "${ENV_FILE}" ]]; then
+            echo "${ENV_FILE} already exists. Delete it to regenerate."
+            exit 1
+        fi
 
         SEED="$(generate_seed)"
-        cat > "${SECRETS_FILE}" << EOF
-secretSeed: "${SEED}"
-EOF
+        sed -e "s/__DOMAIN__/${DOMAIN}/g" \
+            -e "s/__ADMIN_EMAIL__/${ADMIN_EMAIL}/g" \
+            -e "s/secretSeed: \"REPLACE_ME\"/secretSeed: \"${SEED}\"/" \
+            "${TEMPLATE_FILE}" > "${ENV_FILE}"
 
         echo ""
-        echo "Created:"
-        echo "  - ${ENV_FILE}"
-        echo "  - ${SECRETS_FILE}"
+        echo "Created: ${ENV_FILE}"
         echo ""
-        echo "Review these files before deploying."
+        echo "Review this file before deploying."
         echo "See docs/advanced-deployment.md for external infrastructure."
         echo ""
         echo "Add to helmfile.yaml.gotmpl:"
@@ -104,7 +114,6 @@ EOF
         echo "      - versions/backend-helm-versions.yaml"
         echo "      - versions/lasuite-helm-versions.yaml"
         echo "      - environments/${ENV_NAME}.yaml"
-        echo "      - conf/${ENV_NAME}/secrets.conf"
         echo "      - environments/_computed.yaml.gotmpl"
         echo ""
         echo "Before deploying, configure DNS records pointing to your cluster:"

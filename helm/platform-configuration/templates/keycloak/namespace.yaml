@@ -1,0 +1,8 @@
+{{- if .Values.keycloak.enabled }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lasuite-keycloak
+  labels:
+    {{- include "platform-configuration.labels" . | nindent 4 }}
+{{- end }}

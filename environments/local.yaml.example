@@ -60,4 +60,4 @@ tls:
   issuer: selfsigned
 
 # Generate with: openssl rand -hex 24
-secretSeed: "c03176099e0075d5b22839dada62bfc75e86925358a4e900"
+secretSeed: "REPLACE_ME"

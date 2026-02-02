@@ -4,9 +4,11 @@ keys/
 # Generated CA certificate
 lasuite-ca.pem
 
-# Secrets (keep .example files)
-conf/*/*.conf
-!conf/*/*.conf.example
+# Environment files with secrets (keep templates)
+environments/*.yaml
+environments/*.secret-overrides.yaml
+!environments/*.yaml.example
+!environments/*.yaml.gotmpl
 
 # Helm charts downloaded
 charts/

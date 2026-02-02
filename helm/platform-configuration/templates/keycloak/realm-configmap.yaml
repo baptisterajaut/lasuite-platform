@@ -1,11 +1,13 @@
+{{- if .Values.keycloak.enabled }}
 {{- $seed := .Values.secretSeed | required "secretSeed is required" -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: keycloak-realm-import
-  namespace: {{ .Release.Namespace }}
+  namespace: lasuite-keycloak
   labels:
-    {{- include "keycloak-realm.labels" . | nindent 4 }}
+    {{- include "platform-configuration.labels" . | nindent 4 }}
 data:
   realm.json: |
     {{- include "keycloak-realm.json" . | nindent 4 }}
+{{- end }}

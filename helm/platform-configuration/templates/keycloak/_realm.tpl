@@ -3,7 +3,7 @@ Generate Keycloak realm JSON
 */}}
 {{- define "keycloak-realm.json" -}}
 {{- $seed := .Values.secretSeed | required "secretSeed is required" -}}
-{{- $realm := .Values.realm -}}
+{{- $realm := .Values.keycloak.realm -}}
 {{- $domain := .Values.domain -}}
 {
   "realm": "{{ $realm }}",
@@ -15,11 +15,11 @@ Generate Keycloak realm JSON
   "resetPasswordAllowed": true,
   "editUsernameAllowed": false,
   "bruteForceProtected": false,
-  {{- if .Values.testUser.enabled }}
+  {{- if .Values.keycloak.testUser.enabled }}
   "users": [
     {
-      "username": "{{ .Values.testUser.username }}",
-      "email": "{{ .Values.testUser.email }}",
+      "username": "{{ .Values.keycloak.testUser.username }}",
+      "email": "{{ .Values.keycloak.testUser.email }}",
       "firstName": "Test",
       "lastName": "User",
       "enabled": true,
@@ -27,7 +27,7 @@ Generate Keycloak realm JSON
       "credentials": [
         {
           "type": "password",
-          "value": "{{ .Values.testUser.password }}",
+          "value": "{{ .Values.keycloak.testUser.password }}",
           "temporary": false
         }
       ]

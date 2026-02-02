@@ -45,17 +45,15 @@ environments:
       - versions/backend-helm-versions.yaml
       - versions/lasuite-helm-versions.yaml
       - environments/local.yaml
-      - conf/local/secrets.conf
       - environments/_computed.yaml.gotmpl
-    missingFileHandler: Warn
 
-  remote-example:
-    values:
-      - versions/backend-helm-versions.yaml
-      - versions/lasuite-helm-versions.yaml
-      - environments/remote-example.yaml
-      - environments/_computed.yaml.gotmpl
-    missingFileHandler: Error
+  # Template for remote deployments - copy and adapt
+  # remote-example:
+  #   values:
+  #     - versions/backend-helm-versions.yaml
+  #     - versions/lasuite-helm-versions.yaml
+  #     - environments/<name>.yaml
+  #     - environments/_computed.yaml.gotmpl
 
 ---
 # ===========================================
@@ -126,18 +124,6 @@ releases:
       - values/redis.yaml.gotmpl
 
   # -------------------------------------------
-  # KEYCLOAK REALM CONFIGURATION
-  # -------------------------------------------
-  - name: keycloak-realm
-    namespace: lasuite-keycloak
-    chart: ./helm/keycloak-realm
-    condition: keycloak.enabled
-    labels:
-      category: infrastructure
-    values:
-      - values/keycloak-realm.yaml.gotmpl
-
-  # -------------------------------------------
   # KEYCLOAK
   # -------------------------------------------
   - name: keycloak
@@ -146,10 +132,10 @@ releases:
     version: {{ .Values.chartVersions.keycloak | quote }}
     condition: keycloak.enabled
     needs:
+      - lasuite-config/platform-configuration
       {{- if .Values.postgres.enabled }}
       - lasuite-postgresql/lasuite-postgresql
       {{- end }}
-      - lasuite-keycloak/keycloak-realm
     labels:
       category: infrastructure
     values:

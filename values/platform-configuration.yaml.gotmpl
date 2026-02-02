@@ -32,7 +32,13 @@ apps:
     enabled: {{ .Values.apps.conversations.enabled }}
 
 keycloak:
+  enabled: {{ .Values.keycloak.enabled }}
   realm: {{ .Values._common.keycloak.realm | quote }}
+  testUser:
+    enabled: {{ .Values.keycloak.testUser.enabled | default false }}
+    username: {{ .Values.keycloak.testUser.username | default "user" | quote }}
+    email: {{ .Values.keycloak.testUser.email | default "user@example.com" | quote }}
+    password: {{ .Values.keycloak.testUser.password | default "password" | quote }}
 
 postgres:
   host: {{ .Values._common.services.postgres.host | quote }}
