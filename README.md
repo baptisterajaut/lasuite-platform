@@ -2,13 +2,11 @@
 
 Reference [Helmfile](https://github.com/helmfile/helmfile) to deploy [La Suite numerique](https://github.com/suitenumerique) on Kubernetes.
 
-> **Note**: This is an example repository for learning and adaptation, not a production-ready platform. Monitoring, GitOps, and advanced HA configurations are left to the deploying organization. See [Architecture Decisions](docs/decisions.md) for rationale.
-
 ## Looking for Production-Ready?
 
 If you need a production-grade platform with automatic updates, security policies, and per-app isolation, check out [MinBZK/mijn-bureau-infra](https://github.com/MinBZK/mijn-bureau-infra) - a more sophisticated helmfile maintained by the Dutch government. See [comparison](docs/comparison-mijn-bureau.md) for details.
 
-If you still want to use this helmfile for production, see [Advanced Deployment](docs/advanced-deployment.md) for external PostgreSQL/Keycloak setup and other production considerations.
+This repository serves as a reference implementation with some [opinionated decisions](docs/decisions.md), while still providing guidance for a somewhat [advanced deployment](docs/advanced-deployment.md) with external infrastructure, that can be iterated upon.
 
 ## Differences with official docs
 
