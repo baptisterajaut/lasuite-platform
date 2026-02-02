@@ -1,7 +1,8 @@
+# Image tag derived from chart version (see versions/lasuite-helm-versions.yaml)
 image:
   repository: lasuite/drive-backend
   pullPolicy: IfNotPresent
-  tag: latest
+  tag: v{{ .Values.laSuiteChartVersions.drive }}
 
 # Main Ingress
 ingress:
@@ -141,4 +142,4 @@ frontend:
   image:
     repository: lasuite/drive-frontend
     pullPolicy: IfNotPresent
-    tag: latest
+    tag: v{{ .Values.laSuiteChartVersions.drive }}

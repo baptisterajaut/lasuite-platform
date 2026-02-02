@@ -2,6 +2,31 @@
 
 This document lists limitations of the current deployment that may affect your usage.
 
+## Image Versioning
+
+### Chart Version vs Image Version
+
+La Suite Helm charts default to `image.tag: latest`, which is not reproducible. This helmfile pins image versions explicitly.
+
+**How it works**:
+- By default, image tags are derived from chart versions: `v{laSuiteChartVersions.X}`
+- When chart and app versions differ, use `laSuiteImageVersions` in `versions/lasuite-helm-versions.yaml`
+
+| App | Chart Version | Image Tag | Source |
+|-----|---------------|-----------|--------|
+| Docs | 4.4.0 | v4.4.0 | Derived from `laSuiteChartVersions.docs` |
+| Drive | 0.11.1 | v0.11.1 | Derived from `laSuiteChartVersions.drive` |
+| Meet | 0.0.15 | v1.5.0 | Explicit in `laSuiteImageVersions.meet` |
+
+### Meet Version Mismatch
+
+Meet's Helm chart version (`0.0.x`) does not match its app version (`v1.x`). This requires an explicit `laSuiteImageVersions.meet` entry.
+
+When updating Meet:
+1. Check latest chart version: `helm search repo meet/meet --versions`
+2. Check latest image tag: https://hub.docker.com/r/lasuite/meet-backend/tags
+3. Update both `laSuiteChartVersions.meet` and `laSuiteImageVersions.meet` in `versions/lasuite-helm-versions.yaml`
+
 ## Waffle/Gaufre Menu
 
 The waffle (gaufre) is the app navigation menu showing links to other La Suite apps.

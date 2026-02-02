@@ -66,7 +66,7 @@ releases:
   - name: cert-manager
     namespace: cert-manager
     chart: jetstack/cert-manager
-    version: {{ .Values.chartVersions.certManager | quote }}
+    version: {{ .Values.backendChartVersions.certManager | quote }}
     condition: certManager.enabled
     labels:
       category: infrastructure
@@ -79,7 +79,7 @@ releases:
   - name: haproxy-ingress
     namespace: haproxy-controller
     chart: haproxytech/kubernetes-ingress
-    version: {{ .Values.chartVersions.haproxy | quote }}
+    version: {{ .Values.backendChartVersions.haproxy | quote }}
     condition: ingress.enabled
     labels:
       category: infrastructure
@@ -92,7 +92,7 @@ releases:
   - name: reflector
     namespace: reflector
     chart: emberstack/reflector
-    version: {{ .Values.chartVersions.reflector | quote }}
+    version: {{ .Values.backendChartVersions.reflector | quote }}
     condition: reflector.enabled
     labels:
       category: infrastructure
@@ -103,7 +103,7 @@ releases:
   - name: lasuite-postgresql
     namespace: lasuite-postgresql
     chart: bitnami/postgresql
-    version: {{ .Values.chartVersions.postgresql | quote }}
+    version: {{ .Values.backendChartVersions.postgresql | quote }}
     condition: postgres.enabled
     labels:
       category: infrastructure
@@ -116,7 +116,7 @@ releases:
   - name: redis
     namespace: lasuite-redis
     chart: bitnami/redis
-    version: {{ .Values.chartVersions.redis | quote }}
+    version: {{ .Values.backendChartVersions.redis | quote }}
     condition: redis.enabled
     labels:
       category: infrastructure
@@ -129,7 +129,7 @@ releases:
   - name: keycloak
     namespace: lasuite-keycloak
     chart: codecentric/keycloakx
-    version: {{ .Values.chartVersions.keycloak | quote }}
+    version: {{ .Values.backendChartVersions.keycloak | quote }}
     condition: keycloak.enabled
     needs:
       - lasuite-config/platform-configuration
@@ -147,7 +147,7 @@ releases:
   - name: minio
     namespace: lasuite-minio
     chart: minio/minio
-    version: {{ .Values.chartVersions.minio | quote }}
+    version: {{ .Values.backendChartVersions.minio | quote }}
     condition: minio.enabled
     labels:
       category: infrastructure
@@ -178,7 +178,7 @@ releases:
   - name: docs
     namespace: lasuite-docs
     chart: docs/docs
-    version: {{ .Values.chartVersions.docs | quote }}
+    version: {{ .Values.laSuiteChartVersions.docs | quote }}
     condition: apps.docs.enabled
     needs:
       - lasuite-config/platform-configuration
@@ -206,7 +206,7 @@ releases:
   - name: drive
     namespace: lasuite-drive
     chart: drive/drive
-    version: {{ .Values.chartVersions.drive | quote }}
+    version: {{ .Values.laSuiteChartVersions.drive | quote }}
     condition: apps.drive.enabled
     needs:
       - lasuite-config/platform-configuration
@@ -234,7 +234,7 @@ releases:
   - name: livekit
     namespace: lasuite-livekit
     chart: livekit/livekit-server
-    version: {{ .Values.chartVersions.livekit | quote }}
+    version: {{ .Values.backendChartVersions.livekit | quote }}
     condition: livekit.enabled
     needs:
       - lasuite-config/platform-configuration
@@ -252,7 +252,7 @@ releases:
   - name: meet
     namespace: lasuite-meet
     chart: meet/meet
-    version: {{ .Values.chartVersions.meet | quote }}
+    version: {{ .Values.laSuiteChartVersions.meet | quote }}
     condition: apps.meet.enabled
     needs:
       - lasuite-config/platform-configuration

@@ -74,4 +74,6 @@ _common:
     # Common settings
     signAlgo: RS256
     scopes: "openid email"
-    verifySsl: "false"
+    # Verify SSL for external OIDC endpoints (browser redirects)
+    # Disabled for self-signed certs, enabled for Let's Encrypt
+    verifySsl: {{ if eq (index $tls "issuer" | default "selfsigned") "selfsigned" }}"false"{{ else }}"true"{{ end }}

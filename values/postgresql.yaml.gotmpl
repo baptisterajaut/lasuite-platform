@@ -1,3 +1,8 @@
+{{/*
+Secret derivation helper - duplicated from helm/platform-configuration/templates/_helpers.tpl
+because Helmfile values files cannot reference chart-defined templates.
+Both implementations must stay in sync.
+*/}}
 {{- define "secret" -}}{{- $seed := index . 0 -}}{{- $id := index . 1 -}}{{- printf "%s:%s" $seed $id | sha256sum | trunc 50 -}}{{- end -}}
 auth:
   postgresPassword: {{ template "secret" (list .Values.secretSeed "postgres-admin") }}
@@ -17,84 +22,80 @@ primary:
         # Use postgres password from Bitnami env
         export PGPASSWORD="${POSTGRESQL_POSTGRES_PASSWORD}"
 
+        # Helper: create database if not exists
+        create_db() {
+          local dbname=$1
+          psql -U postgres -tc "SELECT 1 FROM pg_database WHERE datname = '$dbname'" | grep -q 1 || \
+            psql -U postgres -c "CREATE DATABASE $dbname"
+        }
+
+        # Helper: create or update user (idempotent)
+        create_user() {
+          local username=$1
+          local password=$2
+          local opts=${3:-""}
+          psql -U postgres -c "
+            DO \$\$
+            BEGIN
+              CREATE USER $username WITH $opts ENCRYPTED PASSWORD '$password';
+            EXCEPTION WHEN duplicate_object THEN
+              ALTER USER $username WITH $opts ENCRYPTED PASSWORD '$password';
+            END
+            \$\$;
+          "
+        }
+
+        # Helper: setup database ownership and extensions
+        setup_db() {
+          local dbname=$1
+          local owner=$2
+          psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE $dbname TO $owner"
+          psql -U postgres -c "ALTER DATABASE $dbname OWNER TO $owner"
+          psql -U postgres -d "$dbname" -c "CREATE EXTENSION IF NOT EXISTS pg_trgm"
+          psql -U postgres -d "$dbname" -c "CREATE EXTENSION IF NOT EXISTS unaccent"
+        }
+
         echo "Creating databases and users..."
 
         # Keycloak
-        psql -v ON_ERROR_STOP=1 --username "postgres" <<-EOSQL
-          CREATE DATABASE keycloak;
-          CREATE USER keycloak WITH ENCRYPTED PASSWORD '{{ template "secret" (list .Values.secretSeed "keycloak-db") }}';
-          GRANT ALL PRIVILEGES ON DATABASE keycloak TO keycloak;
-          ALTER DATABASE keycloak OWNER TO keycloak;
-        EOSQL
+        create_db keycloak
+        create_user keycloak '{{ template "secret" (list .Values.secretSeed "keycloak-db") }}'
+        psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE keycloak TO keycloak"
+        psql -U postgres -c "ALTER DATABASE keycloak OWNER TO keycloak"
 
         {{- if .Values.apps.docs.enabled }}
         # Docs
-        psql -v ON_ERROR_STOP=1 --username "postgres" <<-EOSQL
-          CREATE DATABASE docs;
-          CREATE USER docs WITH SUPERUSER ENCRYPTED PASSWORD '{{ template "secret" (list .Values.secretSeed "docs-db") }}';
-          GRANT ALL PRIVILEGES ON DATABASE docs TO docs;
-          ALTER DATABASE docs OWNER TO docs;
-        EOSQL
-        psql -v ON_ERROR_STOP=1 --username "postgres" -d docs <<-EOSQL
-          CREATE EXTENSION IF NOT EXISTS pg_trgm;
-          CREATE EXTENSION IF NOT EXISTS unaccent;
-        EOSQL
+        create_db docs
+        create_user docs '{{ template "secret" (list .Values.secretSeed "docs-db") }}' "SUPERUSER"
+        setup_db docs docs
         {{- end }}
 
         {{- if .Values.apps.meet.enabled }}
         # Meet
-        psql -v ON_ERROR_STOP=1 --username "postgres" <<-EOSQL
-          CREATE DATABASE meet;
-          CREATE USER meet WITH SUPERUSER ENCRYPTED PASSWORD '{{ template "secret" (list .Values.secretSeed "meet-db") }}';
-          GRANT ALL PRIVILEGES ON DATABASE meet TO meet;
-          ALTER DATABASE meet OWNER TO meet;
-        EOSQL
-        psql -v ON_ERROR_STOP=1 --username "postgres" -d meet <<-EOSQL
-          CREATE EXTENSION IF NOT EXISTS pg_trgm;
-          CREATE EXTENSION IF NOT EXISTS unaccent;
-        EOSQL
+        create_db meet
+        create_user meet '{{ template "secret" (list .Values.secretSeed "meet-db") }}' "SUPERUSER"
+        setup_db meet meet
         {{- end }}
 
         {{- if .Values.apps.drive.enabled }}
         # Drive
-        psql -v ON_ERROR_STOP=1 --username "postgres" <<-EOSQL
-          CREATE DATABASE drive;
-          CREATE USER drive WITH SUPERUSER ENCRYPTED PASSWORD '{{ template "secret" (list .Values.secretSeed "drive-db") }}';
-          GRANT ALL PRIVILEGES ON DATABASE drive TO drive;
-          ALTER DATABASE drive OWNER TO drive;
-        EOSQL
-        psql -v ON_ERROR_STOP=1 --username "postgres" -d drive <<-EOSQL
-          CREATE EXTENSION IF NOT EXISTS pg_trgm;
-          CREATE EXTENSION IF NOT EXISTS unaccent;
-        EOSQL
+        create_db drive
+        create_user drive '{{ template "secret" (list .Values.secretSeed "drive-db") }}' "SUPERUSER"
+        setup_db drive drive
         {{- end }}
 
         {{- if .Values.apps.desk.enabled }}
         # Desk
-        psql -v ON_ERROR_STOP=1 --username "postgres" <<-EOSQL
-          CREATE DATABASE desk;
-          CREATE USER desk WITH SUPERUSER ENCRYPTED PASSWORD '{{ template "secret" (list .Values.secretSeed "desk-db") }}';
-          GRANT ALL PRIVILEGES ON DATABASE desk TO desk;
-          ALTER DATABASE desk OWNER TO desk;
-        EOSQL
-        psql -v ON_ERROR_STOP=1 --username "postgres" -d desk <<-EOSQL
-          CREATE EXTENSION IF NOT EXISTS pg_trgm;
-          CREATE EXTENSION IF NOT EXISTS unaccent;
-        EOSQL
+        create_db desk
+        create_user desk '{{ template "secret" (list .Values.secretSeed "desk-db") }}' "SUPERUSER"
+        setup_db desk desk
         {{- end }}
 
         {{- if .Values.apps.conversations.enabled }}
         # Conversations
-        psql -v ON_ERROR_STOP=1 --username "postgres" <<-EOSQL
-          CREATE DATABASE conversations;
-          CREATE USER conversations WITH SUPERUSER ENCRYPTED PASSWORD '{{ template "secret" (list .Values.secretSeed "conversations-db") }}';
-          GRANT ALL PRIVILEGES ON DATABASE conversations TO conversations;
-          ALTER DATABASE conversations OWNER TO conversations;
-        EOSQL
-        psql -v ON_ERROR_STOP=1 --username "postgres" -d conversations <<-EOSQL
-          CREATE EXTENSION IF NOT EXISTS pg_trgm;
-          CREATE EXTENSION IF NOT EXISTS unaccent;
-        EOSQL
+        create_db conversations
+        create_user conversations '{{ template "secret" (list .Values.secretSeed "conversations-db") }}' "SUPERUSER"
+        setup_db conversations conversations
         {{- end }}
 
         echo "Init complete."

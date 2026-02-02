@@ -6,9 +6,9 @@ Reference [Helmfile](https://github.com/helmfile/helmfile) to deploy [La Suite n
 
 ## Looking for Production-Ready?
 
-If you need a production-grade platform with automatic updates, security policies, and per-app isolation, check out [MinBZK/mijn-bureau-infra](https://github.com/MinBZK/mijn-bureau-infra) - a more sophisticated helmfile maintained by the Dutch government.
+If you need a production-grade platform with automatic updates, security policies, and per-app isolation, check out [MinBZK/mijn-bureau-infra](https://github.com/MinBZK/mijn-bureau-infra) - a more sophisticated helmfile maintained by the Dutch government. See [comparison](docs/comparison-mijn-bureau.md) for details.
 
-This project is for you if you want a **simpler starting point** to understand La Suite deployment, or need a **blank slate** to build your own infrastructure on top. See [comparison](docs/comparison-mijn-bureau.md) for details.
+If you still want to use this helmfile for production, see [Advanced Deployment](docs/advanced-deployment.md) for external PostgreSQL/Keycloak setup and other production considerations.
 
 ## Differences with official docs
 

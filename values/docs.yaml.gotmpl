@@ -1,7 +1,8 @@
+# Image tag derived from chart version (see versions/lasuite-helm-versions.yaml)
 image:
   repository: lasuite/impress-backend
   pullPolicy: IfNotPresent
-  tag: latest
+  tag: v{{ .Values.laSuiteChartVersions.docs }}
 
 # Main Ingress
 ingress:
@@ -182,7 +183,7 @@ frontend:
   image:
     repository: lasuite/impress-frontend
     pullPolicy: IfNotPresent
-    tag: latest
+    tag: v{{ .Values.laSuiteChartVersions.docs }}
 
 # Y-Provider
 yProvider:
@@ -190,7 +191,7 @@ yProvider:
   image:
     repository: lasuite/impress-y-provider
     pullPolicy: IfNotPresent
-    tag: latest
+    tag: v{{ .Values.laSuiteChartVersions.docs }}
   envVars:
     COLLABORATION_BACKEND_BASE_URL: https://docs.{{ .Values.domain }}
     COLLABORATION_LOGGING: "true"

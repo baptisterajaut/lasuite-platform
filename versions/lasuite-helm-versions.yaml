@@ -1,7 +1,14 @@
 # La Suite numerique chart versions
-chartVersions:
+laSuiteChartVersions:
   docs: "4.4.0"
   meet: "0.0.15"
   drive: "0.11.1"
   desk: "0.0.7"
   conversations: "0.0.4"
+
+# Image version overrides
+# By default, image tags are derived from chart versions (v{laSuiteChartVersions.X}).
+# Only specify here when chart version and image version differ.
+# See docs/known-limitations.md for details.
+laSuiteImageVersions:
+  meet: "v1.5.0"  # Meet chart 0.0.x does not match app version v1.x

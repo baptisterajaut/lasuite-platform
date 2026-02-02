@@ -29,7 +29,7 @@ This means that using the same `secretSeed` will always produce the same secrets
 To compute a specific secret:
 
 ```bash
-SEED=$(grep secretSeed conf/local/secrets.conf | cut -d'"' -f2)
+SEED=$(grep secretSeed environments/local.yaml | cut -d'"' -f2)
 echo -n "${SEED}:docs-db" | shasum -a 256 | cut -c1-50
 ```
 
@@ -63,7 +63,7 @@ If you have existing credentials that you cannot change (e.g., existing database
 
 ### Method 1: Secret Overrides File
 
-Create a file `conf/my-env/secret-overrides.conf`:
+Create a file `environments/my-env.secret-overrides.yaml`:
 
 ```yaml
 secretOverrides:
@@ -94,14 +94,13 @@ environments:
       - versions/backend-helm-versions.yaml
       - versions/lasuite-helm-versions.yaml
       - environments/my-env.yaml
-      - conf/my-env/secrets.conf
-      - conf/my-env/secret-overrides.conf  # Add this
+      - environments/my-env.secret-overrides.yaml  # Add this
       - environments/_computed.yaml.gotmpl
 ```
 
-### Method 2: Inline in secrets.conf
+### Method 2: Inline in environment file
 
-You can also add overrides directly in your `secrets.conf`:
+You can also add overrides directly in your environment file (`environments/my-env.yaml`):
 
 ```yaml
 secretSeed: "your_seed_here"
@@ -196,7 +195,7 @@ postgres:
 
 ### 3. Set the passwords
 
-In `conf/my-env/secret-overrides.conf`:
+In `environments/my-env.secret-overrides.yaml`:
 
 ```yaml
 secretOverrides:
@@ -243,7 +242,7 @@ keycloak:
 
 ### 3. Set the client secrets
 
-In `conf/my-env/secret-overrides.conf`:
+In `environments/my-env.secret-overrides.yaml`:
 
 ```yaml
 secretOverrides:
@@ -294,7 +293,7 @@ Setting `provider: oos` adds compatibility env vars (`AWS_REQUEST_CHECKSUM_CALCU
 
 ### 3. Set the credentials
 
-In `conf/my-env/secret-overrides.conf`:
+In `environments/my-env.secret-overrides.yaml`:
 
 ```yaml
 secretOverrides:
@@ -317,8 +316,7 @@ secretOverrides:
 ```
 
 This creates:
-- `environments/<name>.yaml` - environment configuration
-- `conf/<name>/secrets.conf` - secret seed
+- `environments/<name>.yaml` - environment configuration (includes secretSeed)
 
 ### 2. Review the configuration
 
@@ -391,6 +389,6 @@ CREATE EXTENSION IF NOT EXISTS unaccent;
 ### Retrieve a secret
 
 ```bash
-SEED=$(grep secretSeed conf/local/secrets.conf | cut -d'"' -f2)
+SEED=$(grep secretSeed environments/local.yaml | cut -d'"' -f2)
 echo -n "${SEED}:<identifier>" | shasum -a 256 | cut -c1-50
 ```

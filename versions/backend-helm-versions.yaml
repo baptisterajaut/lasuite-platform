@@ -1,5 +1,5 @@
 # Backend/infrastructure chart versions
-chartVersions:
+backendChartVersions:
   # Bitnami
   postgresql: "18.2.3"
   redis: "24.1.2"
@@ -11,5 +11,5 @@ chartVersions:
   certManager: "1.19.0"
   trustManager: "0.13.0"
   haproxy: "1.47.5"
-  reflector: "9.1.45"
+  reflector: "10.0.3"
   livekit: "1.9.0"

@@ -344,4 +344,4 @@ This project does not include secret management tooling because:
 - **Derived secrets** - Internal secrets are computed from the seed at deploy time
 - **Simpler setup** - No additional tooling required to get started
 
-For production, if you need to store secrets that cannot be derived (external API keys, custom credentials), consider using [SOPS](https://github.com/getsops/sops) to encrypt `conf/<env>/secret-overrides.conf`. SOPS integrates well with git and requires minimal setup (GPG or cloud KMS).
+For production, if you need to store secrets that cannot be derived (external API keys, custom credentials), consider using [SOPS](https://github.com/getsops/sops) to encrypt `environments/<env>.secret-overrides.yaml`. SOPS integrates well with git and requires minimal setup (GPG or cloud KMS).

@@ -1,7 +1,9 @@
+# Image tag from imageVersions (Meet chart version does not match app version)
+# See versions/lasuite-helm-versions.yaml and docs/known-limitations.md
 image:
   repository: lasuite/meet-backend
   pullPolicy: IfNotPresent
-  tag: latest
+  tag: {{ .Values.laSuiteImageVersions.meet }}
 
 # Main Ingress
 ingress:
@@ -125,7 +127,7 @@ frontend:
   image:
     repository: lasuite/meet-frontend
     pullPolicy: IfNotPresent
-    tag: latest
+    tag: {{ .Values.laSuiteImageVersions.meet }}
 
 # Summary service (AI) - disabled
 summary:
