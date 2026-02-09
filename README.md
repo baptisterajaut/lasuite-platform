@@ -72,6 +72,7 @@ The interactive script will:
 3. Run `helmfile sync` automatically
 4. Detect the LoadBalancer IP and show the `/etc/hosts` line to add
 5. Extract the CA certificate to `lasuite-ca.pem`
+6. Display credentials (Keycloak admin password, People Django admin if enabled)
 
 ### Remote Deployment
 
@@ -120,7 +121,7 @@ To disable hostNetwork (requires cloud LoadBalancer with UDP or TURN relay), set
 | People | https://people.suite.local | user / password |
 | Find | https://find.suite.local | user / password |
 | Conversations | https://conversations.suite.local | user / password |
-| Keycloak Admin | https://auth.suite.local | admin / (see below) |
+| Keycloak Admin | https://auth.suite.local | admin / (displayed by `init.sh`) |
 | MinIO Console | https://minio-console.suite.local | (derived from secretSeed) |
 
 Only apps with `enabled: true` in your environment file will be accessible.

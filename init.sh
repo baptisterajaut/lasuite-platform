@@ -33,7 +33,7 @@ post_deploy() {
     echo ""
     echo "Waiting for LoadBalancer IP..."
     LB_IP=""
-    for i in {1..30}; do
+    for _ in {1..30}; do
         LB_IP=$(kubectl get svc haproxy-ingress-kubernetes-ingress -n haproxy-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
         if [[ -n "${LB_IP}" ]]; then
             break
