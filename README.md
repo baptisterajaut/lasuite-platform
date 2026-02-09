@@ -123,12 +123,7 @@ cp environments/local.yaml.example environments/local.yaml
 
 ### 2. Generate a secret seed
 
-```bash
-SEED=$(openssl rand -hex 24)
-sed -i '' "s/REPLACE_ME/$SEED/" environments/local.yaml
-```
-
-On Linux, use `sed -i` (without `''`).
+At the bottom of `environments/local.yaml`, replace the `REPLACE_ME` value of `secretSeed` with a random value (e.g. `openssl rand -hex 24`).
 
 ### 3. (Optional) Enable or disable apps
 
