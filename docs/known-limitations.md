@@ -19,7 +19,7 @@ La Suite Helm charts default to `image.tag: latest`, which is not reproducible. 
 | Meet | 0.0.15 | v1.5.0 | Explicit in `laSuiteImageVersions.meet` |
 | People | 0.0.7 | latest | No published version tags |
 | Conversations | 0.0.5 | latest | No published version tags |
-| Find | 0.0.3 | latest | Image not published on Docker Hub |
+| Find | 0.0.3 | main | Published as `lasuite/find` (not `find-backend`) |
 
 ### Meet Version Mismatch
 
@@ -171,6 +171,6 @@ kubectl -n lasuite-people exec deploy/people-desk-backend -- \
   python manage.py createsuperuser --username admin@suite.local --password "$PASS"
 ```
 
-### Unpublished Images
+### Find Image Name Mismatch
 
-- `lasuite/find-backend` is not published on Docker Hub. The Helm chart (find v0.0.3) exists but the image does not. Find cannot be deployed until the image is published.
+The Find Helm chart defaults to `lasuite/find-backend` but the image is published as `lasuite/find` on Docker Hub. The helmfile overrides the repository in `values/find.yaml.gotmpl`. Only the `main` tag is available (no versioned tags).

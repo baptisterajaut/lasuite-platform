@@ -27,7 +27,7 @@ See [detailed comparison](docs/decisions.md#differences-with-official-installati
 | **Meet** | Video conferencing (Google Meet-like) | Implemented                  |
 | **Drive** | File storage and sharing (Google Drive-like) | Implemented                  |
 | **People** | Directory and team management | Implemented                  |
-| **Find** | Cross-app search engine (requires OpenSearch) | Broken (image not published) |
+| **Find** | Cross-app search engine (requires OpenSearch) | Implemented - Untested       |
 | **Conversations** | AI chatbot (requires LLM backend) | Implemented - Untested       |
 
 Apps are enabled/disabled in `environments/local.yaml` (or your environment file):
@@ -43,7 +43,7 @@ apps:
   people:
     enabled: true
   find:
-    enabled: false    # image not published + requires OpenSearch (heavy)
+    enabled: false    # requires OpenSearch (heavy on resources)
   conversations:
     enabled: false    # requires LLM backend (not included)
 ```
