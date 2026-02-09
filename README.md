@@ -111,6 +111,43 @@ LiveKit uses `hostNetwork` by default to expose WebRTC ports directly on nodes. 
 
 To disable hostNetwork (requires cloud LoadBalancer with UDP or TURN relay), set `podHostNetwork: false` in `values/livekit.yaml.gotmpl`.
 
+## Manual Installation
+
+If you prefer to set things up manually instead of using `init.sh`:
+
+### 1. Copy the example environment
+
+```bash
+cp environments/local.yaml.example environments/local.yaml
+```
+
+### 2. Generate a secret seed
+
+```bash
+SEED=$(openssl rand -hex 24)
+sed -i '' "s/REPLACE_ME/$SEED/" environments/local.yaml
+```
+
+On Linux, use `sed -i` (without `''`).
+
+### 3. (Optional) Enable or disable apps
+
+Edit `environments/local.yaml` to toggle apps under the `apps:` section.
+
+### 4. Deploy
+
+```bash
+helmfile -e local sync
+```
+
+### 5. Configure DNS
+
+Point `*.suite.local` domains to your LoadBalancer IP, either via local DNS or by editing `/etc/hosts`.
+
+### 6. Trust the CA certificate
+
+For self-signed TLS (local environment), the CA certificate is stored in the `lasuite-ca-secret` secret in the `cert-manager` namespace.
+
 ## Access (Local)
 
 | Service | URL | Credentials |

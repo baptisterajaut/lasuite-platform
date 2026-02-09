@@ -9,6 +9,7 @@ This guide explains how to deploy La Suite with existing infrastructure (Postgre
 - [Using an Existing PostgreSQL](#using-an-existing-postgresql)
 - [Using an Existing Keycloak](#using-an-existing-keycloak)
 - [Using an Existing S3](#using-an-existing-s3)
+- [Using an Existing OpenSearch](#using-an-existing-opensearch)
 - [Production Deployment](#production-deployment)
 - [Troubleshooting](#troubleshooting)
 
@@ -316,6 +317,44 @@ secretOverrides:
   s3-access: "AKIAIOSFODNN7EXAMPLE"
   s3-secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 ```
+
+---
+
+## Using an Existing OpenSearch
+
+OpenSearch is required by Find for cross-app search indexing. If you already have an OpenSearch cluster, you can use it instead of deploying the one from helmfile.
+
+### 1. Configure the environment
+
+```yaml
+# environments/my-env.yaml
+
+opensearch:
+  enabled: false  # Do not deploy OpenSearch
+  host: opensearch.example.com
+  port: 9200
+```
+
+### 2. Set the admin password
+
+In `environments/my-env.secret-overrides.yaml`:
+
+```yaml
+secretOverrides:
+  opensearch-admin: "your_opensearch_admin_password"
+```
+
+> **Note**: When using `secretOverrides`, the password is used as-is. When derived from `secretSeed`, the suffix `!Os0` is appended automatically to satisfy OpenSearch complexity requirements (SHA256 hex only produces `[0-9a-f]`).
+
+### 3. Verify connectivity
+
+```bash
+kubectl run test --rm -it --image=curlimages/curl -- \
+  curl -u admin:your_opensearch_admin_password \
+  http://opensearch.example.com:9200/_cluster/health
+```
+
+Find connects to OpenSearch over HTTP (no TLS) by default (`OPENSEARCH_USE_SSL: "false"`). If your cluster requires TLS, you will need to adjust the Find values accordingly.
 
 ---
 
