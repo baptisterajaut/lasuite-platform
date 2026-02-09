@@ -1,8 +1,8 @@
 # La Suite numerique chart versions
 laSuiteChartVersions:
-  docs: "4.4.0"
+  docs: "4.5.0"
   meet: "0.0.15"
-  drive: "0.11.1"
+  drive: "0.12.0"
   people: "0.0.7"
   conversations: "0.0.5"
   find: "0.0.3"

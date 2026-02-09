@@ -14,8 +14,8 @@ La Suite Helm charts default to `image.tag: latest`, which is not reproducible. 
 
 | App | Chart Version | Image Tag | Source |
 |-----|---------------|-----------|--------|
-| Docs | 4.4.0 | v4.4.0 | Derived from `laSuiteChartVersions.docs` |
-| Drive | 0.11.1 | v0.11.1 | Derived from `laSuiteChartVersions.drive` |
+| Docs | 4.5.0 | v4.5.0 | Derived from `laSuiteChartVersions.docs` |
+| Drive | 0.12.0 | v0.12.0 | Derived from `laSuiteChartVersions.drive` |
 | Meet | 0.0.15 | v1.5.0 | Explicit in `laSuiteImageVersions.meet` |
 | People | 0.0.7 | latest | No published version tags |
 | Conversations | 0.0.5 | latest | No published version tags |
@@ -36,14 +36,9 @@ The waffle (gaufre) is the app navigation menu showing links to other La Suite a
 
 ### Docs
 
-| Version | Behavior |
-|---------|----------|
-| v4.4.0 | Waffle controlled by `FRONTEND_THEME`. Set to `dsfr` to enable, but URLs are hardcoded to gouv.fr |
-| v4.5.0+ | Waffle configurable via `themeCustomization.waffle` (not yet released) |
+Since v4.5.0, the waffle is configurable via `backend.themeCustomization`. The helmfile configures it with local URLs pointing to deployed apps.
 
-**Current state**: Waffle enabled with `FRONTEND_THEME: dsfr`. Links point to official gouv.fr instances, not your local deployment.
-
-**Future fix**: When Docs 4.5.0 releases, uncomment `themeCustomization` in `values/docs.yaml.gotmpl` to configure custom URLs.
+**Note**: The `themeCustomization` JSON is cached by Django in Redis for 24h. After changing the config, either wait for cache expiry or delete the cache key manually.
 
 ### Drive
 
@@ -123,6 +118,16 @@ Keycloak must have `KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true` to accept requests on 
 
 The Find Keycloak client has `serviceAccountsEnabled: true` (unlike other apps) because Find uses the OIDC Resource Server pattern with token introspection for API access.
 
+## Redis
+
+### FLUSHDB / FLUSHALL Disabled
+
+The Bitnami Redis chart disables `FLUSHDB` and `FLUSHALL` by default (`master.disableCommands`). This is a security best practice but affects Django apps that use `cache.clear()` (e.g., `django-redis` calls `FLUSHDB` internally).
+
+**Consequence**: `cache.clear()` will raise `ConnectionInterrupted`. To invalidate specific cache entries, use `cache.delete(key)` instead.
+
+To re-enable these commands (not recommended in production), set `master.disableCommands: []` in `values/redis.yaml.gotmpl`.
+
 ## PostgreSQL
 
 ### Django Users Require SUPERUSER
@@ -142,6 +147,18 @@ There is no reliable way to force an amd64 pull on ARM64 nodes: `nerdctl --platf
 - `lasuite/conversations-frontend:latest`
 
 **Consequence**: Conversations cannot be tested on ARM64 nodes until upstream publishes corrected manifests.
+
+### Drive Celery Beat (chart 0.12.0)
+
+The `drive` chart v0.12.0 adds a `celeryBeat` deployment but does not provide a writable volume for the `celerybeat-schedule` file. The container's working directory (`/app`) is read-only, causing a `PermissionError` crash loop.
+
+Workaround in `values/drive.yaml.gotmpl`: override the args to write the schedule to `/tmp`:
+
+```yaml
+backend:
+  celeryBeat:
+    args: ["celery", "-A", "drive.celery_app", "beat", "-l", "INFO", "--schedule=/tmp/celerybeat-schedule"]
+```
 
 ### People (Desk) Chart Bug
 

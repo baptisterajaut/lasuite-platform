@@ -100,7 +100,6 @@ These are specific to "La Suite territoriale" (local government variant):
 |------|-------------|
 | `.github` | GitHub organization config |
 | `hackdays` / `hackdays2025` | Hackathon landing pages |
-| `find` | Cross-app search engine (included in helmfile, image not yet published) |
 
 ---
 

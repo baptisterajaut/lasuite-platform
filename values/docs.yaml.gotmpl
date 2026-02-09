@@ -68,36 +68,38 @@ serviceMedia:
 backend:
   replicas: 1
 
-  # Waffle menu customization (Docs >= 4.5.0, not yet released)
-  # See docs/known-limitations.md for details
-  # themeCustomization:
-  #   enabled: true
-  #   file_content:
-  #     waffle:
-  #       widgetPath: https://static.suite.anct.gouv.fr/widgets/lagaufre.js
-  #       data:
-  #         services:
-  #           - name: Docs
-  #             url: https://docs.{{ .Values.domain }}/
-  #             maturity: stable
-  #             logo: https://lasuite.numerique.gouv.fr/assets/products/docs.svg
-  #           {{- if .Values.apps.drive.enabled }}
-  #           - name: Fichiers
-  #             url: https://drive.{{ .Values.domain }}/
-  #             maturity: stable
-  #             logo: https://lasuite.numerique.gouv.fr/assets/products/fichiers.svg
-  #           {{- end }}
-  #           {{- if .Values.apps.meet.enabled }}
-  #           - name: Visio
-  #             url: https://meet.{{ .Values.domain }}/
-  #             maturity: stable
-  #             logo: https://lasuite.numerique.gouv.fr/assets/products/visio.svg
-  #           {{- end }}
-  #       showMoreLimit: 9
+  themeCustomization:
+    enabled: true
+    file_content:
+      waffle:
+        widgetPath: https://static.suite.anct.gouv.fr/widgets/lagaufre.js
+        data:
+          services:
+            - name: Docs
+              url: https://docs.{{ .Values.domain }}/
+              maturity: stable
+              logo: https://lasuite.numerique.gouv.fr/assets/products/docs.svg
+            {{- if .Values.apps.drive.enabled }}
+            - name: Fichiers
+              url: https://drive.{{ .Values.domain }}/
+              maturity: stable
+              logo: https://lasuite.numerique.gouv.fr/assets/products/fichiers.svg
+            {{- end }}
+            {{- if .Values.apps.meet.enabled }}
+            - name: Visio
+              url: https://meet.{{ .Values.domain }}/
+              maturity: stable
+              logo: https://lasuite.numerique.gouv.fr/assets/products/visio.svg
+            {{- end }}
+            {{- if .Values.apps.people.enabled }}
+            - name: People
+              url: https://people.{{ .Values.domain }}/
+              maturity: stable
+              logo: https://raw.githubusercontent.com/suitenumerique/people/main/src/frontend/apps/desk/src/assets/logo-regie.svg
+            {{- end }}
+          showMoreLimit: 9
 
   envVars:
-    # Enables waffle menu with DSFR theme (see docs/known-limitations.md)
-    FRONTEND_THEME: dsfr
     # Django admin
     DJANGO_SUPERUSER_EMAIL: {{ .Values.adminEmail }}
     DJANGO_SUPERUSER_PASSWORD:
@@ -162,6 +164,8 @@ backend:
     OIDC_RP_SIGN_ALGO: {{ .Values._common.oidc.signAlgo }}
     OIDC_RP_SCOPES: {{ .Values._common.oidc.scopes | quote }}
     OIDC_VERIFY_SSL: {{ .Values._common.oidc.verifySsl | quote }}
+    # Silent login: auto-connect via OIDC iframe if already authenticated
+    FRONTEND_SILENT_LOGIN_ENABLED: "True"
     # Redirects
     LOGIN_REDIRECT_URL: https://docs.{{ .Values.domain }}
     LOGIN_REDIRECT_URL_FAILURE: https://docs.{{ .Values.domain }}
