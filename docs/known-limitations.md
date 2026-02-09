@@ -17,6 +17,9 @@ La Suite Helm charts default to `image.tag: latest`, which is not reproducible. 
 | Docs | 4.4.0 | v4.4.0 | Derived from `laSuiteChartVersions.docs` |
 | Drive | 0.11.1 | v0.11.1 | Derived from `laSuiteChartVersions.drive` |
 | Meet | 0.0.15 | v1.5.0 | Explicit in `laSuiteImageVersions.meet` |
+| People | 0.0.7 | latest | No published version tags |
+| Conversations | 0.0.5 | latest | No published version tags |
+| Find | 0.0.3 | latest | Image not published on Docker Hub |
 
 ### Meet Version Mismatch
 
@@ -116,11 +119,9 @@ Pods cannot resolve `/etc/hosts` entries from the host machine. OIDC configurati
 
 Keycloak must have `KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true` to accept requests on internal URLs when `KC_HOSTNAME` is set to an external URL.
 
-## Redis
+### Find Service Account
 
-### FLUSHDB Disabled
-
-Our Redis configuration disables dangerous commands including `FLUSHDB`. To clear specific cache keys, delete them individually rather than flushing the entire database.
+The Find Keycloak client has `serviceAccountsEnabled: true` (unlike other apps) because Find uses the OIDC Resource Server pattern with token introspection for API access.
 
 ## PostgreSQL
 

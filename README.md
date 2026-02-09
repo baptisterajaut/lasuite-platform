@@ -28,7 +28,7 @@ See [detailed comparison](docs/decisions.md#differences-with-official-installati
 | **Drive** | File storage and sharing (Google Drive-like) | Implemented                  |
 | **People** | Directory and team management | Implemented                  |
 | **Find** | Cross-app search engine (requires OpenSearch) | Broken (image not published) |
-| **Conversations** | AI chatbot (requires LLM backend) | Implementer - Untested       |
+| **Conversations** | AI chatbot (requires LLM backend) | Implemented - Untested       |
 
 Apps are enabled/disabled in `environments/local.yaml` (or your environment file):
 
@@ -149,7 +149,7 @@ grep secretSeed environments/local.yaml | cut -d'"' -f2 | xargs -I{} sh -c 'echo
 ```
 
 ## Infrastructure
-On
+
 All infrastructure is deployed automatically. For production, replace MinIO with real S3 and consider using external PostgreSQL/Redis.
 
 | Component | Chart | Purpose |

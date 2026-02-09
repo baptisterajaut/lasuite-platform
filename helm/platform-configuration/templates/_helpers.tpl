@@ -14,6 +14,8 @@ Note: Default length is 50 (Django SECRET_KEY requires >= 50 chars)
 Get a secret value: use override if provided, otherwise derive from seed
 Usage: {{ include "getSecret" (dict "root" . "id" "docs-db") }}
 Optional length: {{ include "getSecret" (dict "root" . "id" "livekit-api-key" "length" 12) }}
+Optional suffix (only appended to derived secrets, not overrides):
+  {{ include "getSecret" (dict "root" . "id" "opensearch-admin" "suffix" "!Os0") }}
 
 Override via secretOverrides in values:
   secretOverrides:
@@ -26,7 +28,7 @@ Override via secretOverrides in values:
 {{- if $override -}}
 {{- $override -}}
 {{- else -}}
-{{- include "deriveSecret" (dict "seed" .root.Values.secretSeed "clientId" .id "length" (.length | default 50)) -}}
+{{- include "deriveSecret" (dict "seed" .root.Values.secretSeed "clientId" .id "length" (.length | default 50)) -}}{{ .suffix | default "" }}
 {{- end -}}
 {{- end -}}
 

@@ -44,16 +44,25 @@ Identifiers used:
 | `docs-db` | Docs DB password |
 | `meet-db` | Meet DB password |
 | `drive-db` | Drive DB password |
+| `people-db` | People DB password |
+| `conversations-db` | Conversations DB password |
+| `find-db` | Find DB password |
 | `redis` | Redis password |
 | `s3-access` | S3 access key |
 | `s3-secret` | S3 secret key |
 | `docs-oidc-client` | Docs OIDC client secret |
 | `meet-oidc-client` | Meet OIDC client secret |
 | `drive-oidc-client` | Drive OIDC client secret |
+| `people-oidc-client` | People OIDC client secret |
+| `conversations-oidc-client` | Conversations OIDC client secret |
+| `find-oidc-client` | Find OIDC client secret |
 | `livekit-api-key` | LiveKit API key |
 | `livekit-api-secret` | LiveKit API secret |
+| `opensearch-admin` | OpenSearch admin password |
 
 > **Note**: Keycloak credentials (`keycloak-db`, `keycloak-admin`) are derived in `values/keycloak.yaml.gotmpl`, not in platform-configuration.
+
+> **Note**: For derived secrets, `!Os0` is appended to the `opensearch-admin` password to satisfy OpenSearch complexity requirements (SHA256 hex only produces `[0-9a-f]`). When using `secretOverrides`, the suffix is **not** appended -- your override value is used as-is.
 
 ---
 
@@ -142,12 +151,19 @@ This means you can mix derived and custom secrets:
 | `docs-django-secret` | Docs Django SECRET_KEY |
 | `meet-django-secret` | Meet Django SECRET_KEY |
 | `drive-django-secret` | Drive Django SECRET_KEY |
+| `people-django-secret` | People Django SECRET_KEY |
+| `conversations-django-secret` | Conversations Django SECRET_KEY |
+| `find-django-secret` | Find Django SECRET_KEY |
 | `docs-superuser` | Docs admin password |
 | `meet-superuser` | Meet admin password |
 | `drive-superuser` | Drive admin password |
+| `people-superuser` | People admin password |
+| `conversations-superuser` | Conversations admin password |
+| `find-superuser` | Find admin password |
 | `livekit-api-key` | LiveKit API key |
 | `livekit-api-secret` | LiveKit API secret |
 | `docs-collaboration` | Y-Provider secret |
+| `opensearch-admin` | OpenSearch admin password (`!Os0` appended only for derived secrets) |
 
 ---
 

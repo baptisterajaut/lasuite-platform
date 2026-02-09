@@ -44,6 +44,7 @@ The [suitenumerique](https://github.com/suitenumerique) GitHub organization cont
 | **Drive** | `drive` | Enabled | File storage and sharing |
 | **People** | `people` | Disabled | Team/user management |
 | **Conversations** | `conversations` | Disabled | AI chatbot (requires LLM) |
+| **Find** | `find` | Disabled | Cross-app search (requires OpenSearch) |
 
 ### Applications without Helm charts
 
@@ -99,7 +100,7 @@ These are specific to "La Suite territoriale" (local government variant):
 |------|-------------|
 | `.github` | GitHub organization config |
 | `hackdays` / `hackdays2025` | Hackathon landing pages |
-| `find` | Empty/unknown |
+| `find` | Cross-app search engine (included in helmfile, image not yet published) |
 
 ---
 
@@ -275,6 +276,12 @@ DB number allocation:
 - `2`: Drive cache
 - `3`: Drive Celery
 - `4`: Meet cache
+- `5`: People cache
+- `6`: People Celery
+- `7`: Conversations cache
+- `8`: Conversations Celery
+- `9`: Find cache
+- `10`: Find Celery
 
 ### PostgreSQL: one database per app
 

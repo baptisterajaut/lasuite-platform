@@ -10,7 +10,7 @@ backendChartVersions:
 
   # Infrastructure
   certManager: "1.19.0"
-  trustManager: "0.13.0"
+  trustManager: "0.13.0"  # Reserved for future internal TLS (not deployed yet)
   haproxy: "1.47.5"
   reflector: "10.0.3"
   livekit: "1.9.0"
