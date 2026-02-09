@@ -37,18 +37,18 @@ apps:
   docs:
     enabled: true
   meet:
-    enabled: true
+    enabled: false    # requires LiveKit (heavy on resources)
   drive:
     enabled: true
   people:
     enabled: true
   find:
-    enabled: false    # lasuite/find-backend image not published yet
+    enabled: false    # image not published + requires OpenSearch (heavy)
   conversations:
-    enabled: true    # note: broken multi-arch manifest
+    enabled: false    # requires LLM backend (not included)
 ```
 
-See [Known Limitations](docs/known-limitations.md) for details on image issues.
+Default enables Docs, Drive, and People. Meet requires LiveKit (resource-heavy). See [Known Limitations](docs/known-limitations.md) for image issues.
 
 ## Prerequisites
 

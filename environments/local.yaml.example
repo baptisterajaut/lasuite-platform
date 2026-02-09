@@ -5,15 +5,15 @@ apps:
   docs:
     enabled: true
   meet:
-    enabled: true
+    enabled: false    # requires LiveKit (heavy on resources)
   drive:
     enabled: true
   people:
     enabled: true
-  conversations:
-    enabled: true
   find:
-    enabled: true
+    enabled: false    # image not published + requires OpenSearch (heavy)
+  conversations:
+    enabled: false    # requires LLM backend (not included)
 
 postgres:
   enabled: true
@@ -40,10 +40,10 @@ minio:
   enabled: true
 
 livekit:
-  enabled: true
+  enabled: false    # enable with meet
 
 opensearch:
-  enabled: true
+  enabled: false    # enable with find
   host: opensearch-cluster-master.lasuite-opensearch.svc.cluster.local
   port: 9200
 

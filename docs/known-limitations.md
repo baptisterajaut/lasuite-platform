@@ -50,6 +50,14 @@ Drive's waffle fetches services from an external API (`https://lasuite.numerique
 
 **Future fix**: Requires a PR on suitenumerique/drive to make waffle URLs configurable at runtime.
 
+### People
+
+People's waffle is unconditionally rendered in the header (`LaGaufre.tsx`). The gaufre script is hardcoded to `https://integration.lasuite.numerique.gouv.fr/api/v1/gaufre.js`. There is no environment variable, feature flag, or backend configuration to disable it.
+
+**Current state**: Waffle always enabled. Links point to official gouv.fr instances. Cannot be disabled without source code changes.
+
+**Future fix**: Requires a PR on suitenumerique/people to add a `FRONTEND_HIDE_GAUFRE` env var (same pattern as Drive).
+
 ### Meet
 
 Meet does not have a waffle menu.

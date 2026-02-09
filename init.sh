@@ -137,8 +137,11 @@ case ${CHOICE} in
             echo "Created ${ENV_FILE}"
         fi
         echo ""
+        echo "Review ${ENV_FILE} to choose which apps to deploy (apps.*.enabled)."
+        echo "Default: docs, drive, people. Optional: meet (+livekit), conversations, find (+opensearch)."
+        echo ""
 
-        read -rp "Press Enter to deploy..."
+        read -rp "Press Enter to run helmfile sync..."
 
         cd "${SCRIPT_DIR}"
         helmfile -e local sync
