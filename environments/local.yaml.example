@@ -8,10 +8,12 @@ apps:
     enabled: true
   drive:
     enabled: true
-  desk:
-    enabled: false
+  people:
+    enabled: true
   conversations:
-    enabled: false
+    enabled: true
+  find:
+    enabled: true
 
 postgres:
   enabled: true
@@ -39,6 +41,11 @@ minio:
 
 livekit:
   enabled: true
+
+opensearch:
+  enabled: true
+  host: opensearch-cluster-master.lasuite-opensearch.svc.cluster.local
+  port: 9200
 
 s3:
   provider: minio

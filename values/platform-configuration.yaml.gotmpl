@@ -12,11 +12,14 @@ appsEnabled:
 {{- if .Values.apps.drive.enabled }}
   - drive
 {{- end }}
-{{- if .Values.apps.desk.enabled }}
-  - desk
+{{- if .Values.apps.people.enabled }}
+  - people
 {{- end }}
 {{- if .Values.apps.conversations.enabled }}
   - conversations
+{{- end }}
+{{- if .Values.apps.find.enabled }}
+  - find
 {{- end }}
 
 apps:
@@ -26,10 +29,12 @@ apps:
     enabled: {{ .Values.apps.meet.enabled }}
   drive:
     enabled: {{ .Values.apps.drive.enabled }}
-  desk:
-    enabled: {{ .Values.apps.desk.enabled }}
+  people:
+    enabled: {{ .Values.apps.people.enabled }}
   conversations:
     enabled: {{ .Values.apps.conversations.enabled }}
+  find:
+    enabled: {{ .Values.apps.find.enabled }}
 
 keycloak:
   enabled: {{ .Values.keycloak.enabled }}
@@ -50,6 +55,10 @@ redis:
 
 s3:
   endpoint: {{ .Values._common.services.s3.endpoint | quote }}
+
+opensearch:
+  host: {{ .Values._common.services.opensearch.host | quote }}
+  port: {{ .Values._common.services.opensearch.port }}
 
 tls:
   issuer: {{ .Values.tls.issuer | quote }}

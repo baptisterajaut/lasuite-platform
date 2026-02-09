@@ -84,11 +84,11 @@ primary:
         setup_db drive drive
         {{- end }}
 
-        {{- if .Values.apps.desk.enabled }}
-        # Desk
-        create_db desk
-        create_user desk '{{ template "secret" (list .Values.secretSeed "desk-db") }}' "SUPERUSER"
-        setup_db desk desk
+        {{- if .Values.apps.people.enabled }}
+        # People
+        create_db people
+        create_user people '{{ template "secret" (list .Values.secretSeed "people-db") }}' "SUPERUSER"
+        setup_db people people
         {{- end }}
 
         {{- if .Values.apps.conversations.enabled }}
@@ -96,6 +96,13 @@ primary:
         create_db conversations
         create_user conversations '{{ template "secret" (list .Values.secretSeed "conversations-db") }}' "SUPERUSER"
         setup_db conversations conversations
+        {{- end }}
+
+        {{- if .Values.apps.find.enabled }}
+        # Find
+        create_db find
+        create_user find '{{ template "secret" (list .Values.secretSeed "find-db") }}' "SUPERUSER"
+        setup_db find find
         {{- end }}
 
         echo "Init complete."

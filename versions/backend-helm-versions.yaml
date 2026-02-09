@@ -6,6 +6,7 @@ backendChartVersions:
   # Others
   keycloak: "7.1.7"
   minio: "5.4.0"
+  opensearch: "3.4.0"
 
   # Infrastructure
   certManager: "1.19.0"

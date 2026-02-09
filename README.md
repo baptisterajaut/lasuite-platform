@@ -21,15 +21,34 @@ See [detailed comparison](docs/decisions.md#differences-with-official-installati
 
 ## Applications
 
-| App | Description | Status |
-|-----|-------------|--------|
-| **Docs** | Collaborative document editing (Google Docs-like) | Implemented |
-| **Meet** | Video conferencing (Google Meet-like) | Implemented |
-| **Drive** | File storage and sharing (Google Drive-like) | Implemented |
-| **Desk** | Directory and team management | Planned |
-| **Conversations** | AI chatbot (requires LLM backend) | Planned |
+| App | Description | Status                       |
+|-----|-------------|------------------------------|
+| **Docs** | Collaborative document editing (Google Docs-like) | Implemented                  |
+| **Meet** | Video conferencing (Google Meet-like) | Implemented                  |
+| **Drive** | File storage and sharing (Google Drive-like) | Implemented                  |
+| **People** | Directory and team management | Implemented                  |
+| **Find** | Cross-app search engine (requires OpenSearch) | Broken (image not published) |
+| **Conversations** | AI chatbot (requires LLM backend) | Implementer - Untested       |
 
-> **Note**: Desk and Conversations are defined in chart versions but not yet fully integrated.
+Apps are enabled/disabled in `environments/local.yaml` (or your environment file):
+
+```yaml
+apps:
+  docs:
+    enabled: true
+  meet:
+    enabled: true
+  drive:
+    enabled: true
+  people:
+    enabled: true
+  find:
+    enabled: false    # lasuite/find-backend image not published yet
+  conversations:
+    enabled: true    # note: broken multi-arch manifest
+```
+
+See [Known Limitations](docs/known-limitations.md) for details on image issues.
 
 ## Prerequisites
 
@@ -68,6 +87,20 @@ The script will ask for:
 
 It creates the configuration files. Review them before deploying.
 
+### Post-deploy: People superuser
+
+The People (desk) chart has a [known bug](docs/known-limitations.md#people-desk-chart-bug) that prevents the automatic superuser creation. The `init.sh` script handles this automatically for local deployments.
+
+For manual creation, derive the password from the secret seed:
+
+```bash
+PASS=$(grep secretSeed environments/local.yaml | cut -d'"' -f2 | xargs -I{} sh -c 'echo -n "{}:people-superuser" | shasum -a 256 | cut -c1-50')
+kubectl -n lasuite-people exec deploy/people-desk-backend -- \
+  python manage.py createsuperuser --username admin@suite.local --password "$PASS"
+```
+
+This is only needed for Django admin access (`https://people.suite.local/admin/`). Regular users authenticate via Keycloak.
+
 ### Firewall (Meet/LiveKit)
 
 LiveKit uses `hostNetwork` by default to expose WebRTC ports directly on nodes. Open these ports:
@@ -84,7 +117,13 @@ To disable hostNetwork (requires cloud LoadBalancer with UDP or TURN relay), set
 | Docs | https://docs.suite.local | user / password |
 | Meet | https://meet.suite.local | user / password |
 | Drive | https://drive.suite.local | user / password |
+| People | https://people.suite.local | user / password |
+| Find | https://find.suite.local | user / password |
+| Conversations | https://conversations.suite.local | user / password |
 | Keycloak Admin | https://auth.suite.local | admin / (see below) |
+| MinIO Console | https://minio-console.suite.local | (derived from secretSeed) |
+
+Only apps with `enabled: true` in your environment file will be accessible.
 
 ### Trusting the CA Certificate
 
@@ -108,6 +147,22 @@ sudo update-ca-certificates
 ```bash
 grep secretSeed environments/local.yaml | cut -d'"' -f2 | xargs -I{} sh -c 'echo -n "{}:keycloak-admin" | shasum -a 256 | cut -c1-50'
 ```
+
+## Infrastructure
+On
+All infrastructure is deployed automatically. For production, replace MinIO with real S3 and consider using external PostgreSQL/Redis.
+
+| Component | Chart | Purpose |
+|-----------|-------|---------|
+| PostgreSQL | bitnami/postgresql | Shared database (1 DB per app) |
+| Redis | bitnami/redis | Cache and Celery broker (1 instance, DB number isolation) |
+| Keycloak | codecentric/keycloakx | OIDC identity provider (1 realm, 1 client per app) |
+| MinIO | minio/minio | S3-compatible storage (dev only) |
+| OpenSearch | opensearch/opensearch | Search engine (for Find) |
+| LiveKit | livekit/livekit-server | WebRTC server (for Meet) |
+| HAProxy | haproxytech/kubernetes-ingress | Ingress controller |
+| cert-manager | jetstack/cert-manager | TLS certificates |
+| Reflector | emberstack/reflector | Cross-namespace secret replication |
 
 ## Documentation
 

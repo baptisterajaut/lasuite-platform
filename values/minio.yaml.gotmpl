@@ -54,3 +54,13 @@ buckets:
     policy: none
     purge: false
 {{- end }}
+{{- if .Values.apps.people.enabled }}
+  - name: people-media-storage
+    policy: none
+    purge: false
+{{- end }}
+{{- if .Values.apps.conversations.enabled }}
+  - name: conversations-media-storage
+    policy: none
+    purge: false
+{{- end }}

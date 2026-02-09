@@ -100,7 +100,7 @@ helmfile.yaml.gotmpl
 | Docs | Yes | Yes |
 | Meet | Yes | Yes |
 | Drive | Yes | Yes |
-| Desk (People) | Yes | No |
+| People | Yes | No |
 | Conversations | Yes | Yes |
 | **Nextcloud** | No | Yes |
 | **Element/Matrix** | No | Yes |

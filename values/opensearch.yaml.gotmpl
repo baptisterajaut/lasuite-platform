@@ -1,0 +1,23 @@
+{{- define "secret" -}}{{- $seed := index . 0 -}}{{- $id := index . 1 -}}{{- printf "%s:%s" $seed $id | sha256sum | trunc 50 -}}{{- end -}}
+# Official OpenSearch chart (opensearch-project/helm-charts)
+# Single-node for development. Production should use a managed service.
+
+singleNode: true
+replicas: 1
+
+# Admin password (required since OpenSearch 2.12+)
+extraEnvs:
+  - name: OPENSEARCH_INITIAL_ADMIN_PASSWORD
+    value: {{ template "secret" (list .Values.secretSeed "opensearch-admin") }}!Os0
+
+persistence:
+  enabled: true
+  size: 10Gi
+
+resources:
+  requests:
+    memory: 512Mi
+    cpu: 250m
+  limits:
+    memory: 1Gi
+    cpu: 500m

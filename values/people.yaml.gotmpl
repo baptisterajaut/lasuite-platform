@@ -1,0 +1,179 @@
+# People - Contact/team management
+image:
+  repository: lasuite/people-backend
+  pullPolicy: IfNotPresent
+  tag: latest
+
+# Main Ingress
+ingress:
+  enabled: true
+  className: {{ .Values._common.ingress.className }}
+  host: people.{{ .Values.domain }}
+  annotations:
+{{ .Values._common.ingress.annotations | toYaml | indent 4 }}
+  tls:
+    enabled: true
+    secretName: people-tls
+
+# Admin Ingress
+ingressAdmin:
+  enabled: true
+  className: {{ .Values._common.ingress.className }}
+  host: people.{{ .Values.domain }}
+  annotations:
+{{ .Values._common.ingress.annotations | toYaml | indent 4 }}
+  tls:
+    enabled: true
+    secretName: people-tls
+
+# Posthog (disabled)
+posthog:
+  ingress:
+    enabled: false
+  ingressAssets:
+    enabled: false
+
+# Backend
+backend:
+  replicas: 1
+  # People chart 0.0.7 bug: createsuperuser command is templated as string instead of array
+  # Disable and run manually: kubectl -n lasuite-people exec deploy/people-backend -- python manage.py createsuperuser
+  createsuperuser:
+    enabled: false
+  envVars:
+    # Django admin
+    DJANGO_SUPERUSER_EMAIL: {{ .Values.adminEmail }}
+    DJANGO_SUPERUSER_PASSWORD:
+      secretKeyRef:
+        name: people-secrets
+        key: DJANGO_SUPERUSER_PASSWORD
+    DJANGO_CONFIGURATION: Production
+    DJANGO_SETTINGS_MODULE: people.settings
+    DJANGO_ALLOWED_HOSTS: people.{{ .Values.domain }}
+    DJANGO_CSRF_TRUSTED_ORIGINS: https://people.{{ .Values.domain }}
+    DJANGO_SECRET_KEY:
+      secretKeyRef:
+        name: people-secrets
+        key: DJANGO_SECRET_KEY
+    # Plugins
+    INSTALLED_PLUGINS: plugins.la_suite
+    # Database
+    DB_HOST: {{ .Values._common.services.postgres.host }}
+    DB_PORT: "{{ .Values._common.services.postgres.port }}"
+    DB_NAME: people
+    DB_USER: people
+    DB_PASSWORD:
+      secretKeyRef:
+        name: people-secrets
+        key: DB_PASSWORD
+    # Redis
+    REDIS_URL:
+      secretKeyRef:
+        name: people-secrets
+        key: REDIS_URL
+    DJANGO_CELERY_BROKER_URL:
+      secretKeyRef:
+        name: people-secrets
+        key: DJANGO_CELERY_BROKER_URL
+    # S3
+    AWS_S3_ENDPOINT_URL: {{ .Values._common.services.s3.endpoint }}
+    AWS_STORAGE_BUCKET_NAME: people-media-storage
+    AWS_S3_ACCESS_KEY_ID:
+      secretKeyRef:
+        name: people-secrets
+        key: AWS_S3_ACCESS_KEY_ID
+    AWS_S3_SECRET_ACCESS_KEY:
+      secretKeyRef:
+        name: people-secrets
+        key: AWS_S3_SECRET_ACCESS_KEY
+    STORAGES_STATICFILES_BACKEND: django.contrib.staticfiles.storage.StaticFilesStorage
+    {{- if eq .Values._common.services.s3.provider "oos" }}
+    # OOS (Outscale) compatibility - disable checksum for older SDK compat
+    AWS_REQUEST_CHECKSUM_CALCULATION: WHEN_REQUIRED
+    AWS_RESPONSE_CHECKSUM_VALIDATION: WHEN_REQUIRED
+    {{- end }}
+    # OIDC - Browser redirects (external)
+    OIDC_OP_AUTHORIZATION_ENDPOINT: {{ .Values._common.oidc.authorizationEndpoint }}
+    OIDC_OP_LOGOUT_ENDPOINT: {{ .Values._common.oidc.logoutEndpoint }}
+    # OIDC - Backend-to-backend (internal)
+    OIDC_OP_JWKS_ENDPOINT: {{ .Values._common.oidc.jwksEndpoint }}
+    OIDC_OP_TOKEN_ENDPOINT: {{ .Values._common.oidc.tokenEndpoint }}
+    OIDC_OP_USER_ENDPOINT: {{ .Values._common.oidc.userEndpoint }}
+    OIDC_RP_CLIENT_ID: people
+    OIDC_RP_CLIENT_SECRET:
+      secretKeyRef:
+        name: people-secrets
+        key: OIDC_RP_CLIENT_SECRET
+    OIDC_RP_SIGN_ALGO: {{ .Values._common.oidc.signAlgo }}
+    OIDC_RP_SCOPES: {{ .Values._common.oidc.scopes | quote }}
+    OIDC_VERIFY_SSL: {{ .Values._common.oidc.verifySsl | quote }}
+    # Redirects
+    LOGIN_REDIRECT_URL: https://people.{{ .Values.domain }}
+    LOGIN_REDIRECT_URL_FAILURE: https://people.{{ .Values.domain }}
+    LOGOUT_REDIRECT_URL: https://people.{{ .Values.domain }}
+    # Feature flags - disable mailbox features (requires Dimail)
+    FEATURE_MAILBOXES_CREATE: "False"
+
+# Celery worker
+celeryWorker:
+  replicas: 1
+  envVars:
+    DJANGO_CONFIGURATION: Production
+    DJANGO_SETTINGS_MODULE: people.settings
+    DJANGO_SECRET_KEY:
+      secretKeyRef:
+        name: people-secrets
+        key: DJANGO_SECRET_KEY
+    DB_HOST: {{ .Values._common.services.postgres.host }}
+    DB_PORT: "{{ .Values._common.services.postgres.port }}"
+    DB_NAME: people
+    DB_USER: people
+    DB_PASSWORD:
+      secretKeyRef:
+        name: people-secrets
+        key: DB_PASSWORD
+    REDIS_URL:
+      secretKeyRef:
+        name: people-secrets
+        key: REDIS_URL
+    DJANGO_CELERY_BROKER_URL:
+      secretKeyRef:
+        name: people-secrets
+        key: DJANGO_CELERY_BROKER_URL
+
+# Celery beat
+celeryBeat:
+  replicas: 1
+  envVars:
+    DJANGO_CONFIGURATION: Production
+    DJANGO_SETTINGS_MODULE: people.settings
+    DJANGO_SECRET_KEY:
+      secretKeyRef:
+        name: people-secrets
+        key: DJANGO_SECRET_KEY
+    DB_HOST: {{ .Values._common.services.postgres.host }}
+    DB_PORT: "{{ .Values._common.services.postgres.port }}"
+    DB_NAME: people
+    DB_USER: people
+    DB_PASSWORD:
+      secretKeyRef:
+        name: people-secrets
+        key: DB_PASSWORD
+    REDIS_URL:
+      secretKeyRef:
+        name: people-secrets
+        key: REDIS_URL
+    DJANGO_CELERY_BROKER_URL:
+      secretKeyRef:
+        name: people-secrets
+        key: DJANGO_CELERY_BROKER_URL
+
+# Frontend
+frontend:
+  replicas: 1
+  image:
+    repository: lasuite/people-frontend
+    pullPolicy: IfNotPresent
+    tag: latest
+  envVars:
+    NEXT_PUBLIC_API_ORIGIN: https://people.{{ .Values.domain }}

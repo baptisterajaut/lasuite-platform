@@ -119,3 +119,32 @@ Our Redis configuration disables dangerous commands including `FLUSHDB`. To clea
 ### Django Users Require SUPERUSER
 
 Django app database users are created with SUPERUSER privileges. This is required for migrations that create C functions (extensions). In production, consider using a more restrictive setup with pre-created extensions.
+
+## Docker Images / ARM64
+
+### Broken Multi-arch Manifests
+
+Some La Suite Docker images have broken multi-arch manifests that declare `unknown/unknown` as the platform instead of `linux/amd64`. On ARM64 nodes (e.g., Rancher Desktop on Apple Silicon), containerd refuses to pull these images.
+
+There is no reliable way to force an amd64 pull on ARM64 nodes: `nerdctl --platform linux/amd64`, `ctr` with CRI labels, and digest-based references all fail because kubelet re-resolves the manifest index from the registry.
+
+**Affected images**:
+- `lasuite/conversations-backend:latest`
+- `lasuite/conversations-frontend:latest`
+
+**Consequence**: Conversations cannot be tested on ARM64 nodes until upstream publishes corrected manifests.
+
+### People (Desk) Chart Bug
+
+The `desk` chart v0.0.7 templates the `createsuperuser` job `command` as a YAML string instead of an array, causing Kubernetes to reject the Job. Workaround: `backend.createsuperuser.enabled: false` in values, then create the superuser manually:
+
+```bash
+# Derive password from secretSeed (same formula as other secrets)
+PASS=$(grep secretSeed environments/local.yaml | cut -d'"' -f2 | xargs -I{} sh -c 'echo -n "{}:people-superuser" | shasum -a 256 | cut -c1-50')
+kubectl -n lasuite-people exec deploy/people-desk-backend -- \
+  python manage.py createsuperuser --username admin@suite.local --password "$PASS"
+```
+
+### Unpublished Images
+
+- `lasuite/find-backend` is not published on Docker Hub. The Helm chart (find v0.0.3) exists but the image does not. Find cannot be deployed until the image is published.

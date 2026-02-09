@@ -14,6 +14,96 @@ generate_seed() {
     openssl rand -hex 24
 }
 
+read_seed() {
+    local env_file="$1"
+    grep secretSeed "${env_file}" | cut -d'"' -f2
+}
+
+post_deploy() {
+    local seed="$1"
+
+    check_command kubectl
+
+    if ! kubectl cluster-info &> /dev/null; then
+        echo "Error: Cannot connect to Kubernetes cluster"
+        exit 1
+    fi
+
+    # Get LoadBalancer IP
+    echo ""
+    echo "Waiting for LoadBalancer IP..."
+    LB_IP=""
+    for i in {1..30}; do
+        LB_IP=$(kubectl get svc haproxy-ingress-kubernetes-ingress -n haproxy-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
+        if [[ -n "${LB_IP}" ]]; then
+            break
+        fi
+        sleep 2
+    done
+
+    if [[ -z "${LB_IP}" ]]; then
+        LB_IP="127.0.0.1"
+        echo "Could not detect LoadBalancer IP, defaulting to ${LB_IP}"
+    fi
+
+    echo ""
+    echo "Add to /etc/hosts:"
+    echo "${LB_IP}  docs.suite.local meet.suite.local drive.suite.local people.suite.local conversations.suite.local find.suite.local auth.suite.local minio.suite.local livekit.suite.local"
+
+    # Extract CA certificate
+    CA_FILE="${SCRIPT_DIR}/lasuite-ca.pem"
+    echo ""
+    kubectl get secret lasuite-ca-secret -n cert-manager -o jsonpath='{.data.tls\.crt}' | base64 -d > "${CA_FILE}" || true
+    echo "CA certificate saved to: ${CA_FILE} (see README for trust instructions)"
+
+    # Compute derived passwords (same as deriveSecret: sha256(seed:id)[:50])
+    KC_PASS=$(echo -n "${seed}:keycloak-admin" | shasum -a 256 | cut -c1-50)
+    PEOPLE_PASS=$(echo -n "${seed}:people-superuser" | shasum -a 256 | cut -c1-50)
+
+    # Create People superuser (chart 0.0.7 bug: createsuperuser job is broken)
+    if kubectl get deploy people-desk-backend -n lasuite-people &> /dev/null; then
+        echo ""
+        echo "Waiting for People backend to be ready..."
+        if kubectl rollout status deploy/people-desk-backend -n lasuite-people --timeout=120s &> /dev/null; then
+            echo "Creating People superuser..."
+            kubectl -n lasuite-people exec deploy/people-desk-backend -- \
+                python manage.py createsuperuser --username admin@suite.local --password "${PEOPLE_PASS}" 2>/dev/null || true
+        else
+            echo "People backend not ready, skipping superuser creation."
+            echo "Run manually: kubectl -n lasuite-people exec deploy/people-desk-backend -- python manage.py createsuperuser --username admin@suite.local --password <see credentials below>"
+        fi
+    fi
+
+    echo ""
+    echo "=== Credentials ==="
+    echo ""
+    echo "Apps (Keycloak user):  user / password"
+    echo "Keycloak admin:        admin / ${KC_PASS}"
+    echo "                       https://auth.suite.local"
+    if kubectl get deploy people-desk-backend -n lasuite-people &> /dev/null 2>&1; then
+    echo "People Django admin:   admin@suite.local / ${PEOPLE_PASS}"
+    echo "                       https://people.suite.local/admin/"
+    fi
+    echo ""
+    echo "Done. Access: https://docs.suite.local"
+}
+
+# --post-deploy: skip config generation and helmfile sync, run post-deploy only
+if [[ "${1}" == "--post-deploy" ]]; then
+    ENV_FILE="${SCRIPT_DIR}/environments/local.yaml"
+    if [[ ! -f "${ENV_FILE}" ]]; then
+        echo "Error: ${ENV_FILE} not found. Run ./init.sh first."
+        exit 1
+    fi
+    SEED="$(read_seed "${ENV_FILE}")"
+    if [[ -z "${SEED}" || "${SEED}" == "REPLACE_ME" ]]; then
+        echo "Error: secretSeed not set in ${ENV_FILE}"
+        exit 1
+    fi
+    post_deploy "${SEED}"
+    exit 0
+fi
+
 echo ""
 echo "=== La Suite Platform - Setup ==="
 echo ""
@@ -38,48 +128,22 @@ case ${CHOICE} in
         fi
 
         if [[ -f "${ENV_FILE}" ]]; then
-            echo "${ENV_FILE} already exists. Delete it to regenerate."
-            exit 1
+            echo "Using existing ${ENV_FILE}"
+            SEED="$(read_seed "${ENV_FILE}")"
+        else
+            SEED="$(generate_seed)"
+            sed "s/secretSeed: \"REPLACE_ME\"/secretSeed: \"${SEED}\"/" \
+                "${TEMPLATE_FILE}" > "${ENV_FILE}"
+            echo "Created ${ENV_FILE}"
         fi
-
-        SEED="$(generate_seed)"
-        sed "s/secretSeed: \"REPLACE_ME\"/secretSeed: \"${SEED}\"/" \
-            "${TEMPLATE_FILE}" > "${ENV_FILE}"
-        echo "Created ${ENV_FILE}"
         echo ""
+
         read -rp "Press Enter to deploy..."
 
         cd "${SCRIPT_DIR}"
         helmfile -e local sync
 
-        # Get LoadBalancer IP
-        echo ""
-        echo "Waiting for LoadBalancer IP..."
-        LB_IP=""
-        for i in {1..30}; do
-            LB_IP=$(kubectl get svc haproxy-ingress-kubernetes-ingress -n haproxy-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
-            if [[ -n "${LB_IP}" ]]; then
-                break
-            fi
-            sleep 2
-        done
-
-        if [[ -z "${LB_IP}" ]]; then
-            LB_IP="127.0.0.1"
-            echo "Could not detect LoadBalancer IP, defaulting to ${LB_IP}"
-        fi
-
-        echo ""
-        echo "Add to /etc/hosts:"
-        echo "${LB_IP}  docs.suite.local meet.suite.local drive.suite.local desk.suite.local auth.suite.local minio.suite.local livekit.suite.local"
-
-        # Extract CA certificate
-        CA_FILE="${SCRIPT_DIR}/lasuite-ca.pem"
-        echo ""
-        kubectl get secret lasuite-ca-secret -n cert-manager -o jsonpath='{.data.tls\.crt}' | base64 -d > "${CA_FILE}" || true
-        echo "CA certificate saved to: ${CA_FILE} (see README for trust instructions)"
-        echo ""
-        echo "Done. Access: https://docs.suite.local (user/password)"
+        post_deploy "${SEED}"
         ;;
 
     2)
@@ -88,7 +152,7 @@ case ${CHOICE} in
         read -rp "Admin email: " ADMIN_EMAIL
 
         ENV_FILE="${SCRIPT_DIR}/environments/${ENV_NAME}.yaml"
-        TEMPLATE_FILE="${SCRIPT_DIR}/environments/remote-example.yaml"
+        TEMPLATE_FILE="${SCRIPT_DIR}/environments/remote.yaml.example"
 
         if [[ -f "${ENV_FILE}" ]]; then
             echo "${ENV_FILE} already exists. Delete it to regenerate."

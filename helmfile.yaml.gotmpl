@@ -24,6 +24,10 @@ repositories:
     url: https://suitenumerique.github.io/people/
   - name: conversations
     url: https://suitenumerique.github.io/conversations/
+  - name: find
+    url: https://suitenumerique.github.io/find/
+  - name: opensearch
+    url: https://opensearch-project.github.io/helm-charts/
   - name: livekit
     url: https://helm.livekit.io
 
@@ -155,6 +159,19 @@ releases:
       - values/minio.yaml.gotmpl
 
   # -------------------------------------------
+  # OPENSEARCH (for Find)
+  # -------------------------------------------
+  - name: opensearch
+    namespace: lasuite-opensearch
+    chart: opensearch/opensearch
+    version: {{ .Values.backendChartVersions.opensearch | quote }}
+    condition: opensearch.enabled
+    labels:
+      category: infrastructure
+    values:
+      - values/opensearch.yaml.gotmpl
+
+  # -------------------------------------------
   # PLATFORM CONFIGURATION
   # -------------------------------------------
   - name: platform-configuration
@@ -273,3 +290,87 @@ releases:
       app: meet
     values:
       - values/meet.yaml.gotmpl
+
+  # -------------------------------------------
+  # PEOPLE
+  # -------------------------------------------
+  - name: people
+    namespace: lasuite-people
+    chart: people/desk
+    version: {{ .Values.laSuiteChartVersions.people | quote }}
+    condition: apps.people.enabled
+    needs:
+      - lasuite-config/platform-configuration
+      {{- if .Values.postgres.enabled }}
+      - lasuite-postgresql/lasuite-postgresql
+      {{- end }}
+      {{- if .Values.redis.enabled }}
+      - lasuite-redis/redis
+      {{- end }}
+      {{- if .Values.keycloak.enabled }}
+      - lasuite-keycloak/keycloak
+      {{- end }}
+      {{- if .Values.minio.enabled }}
+      - lasuite-minio/minio
+      {{- end }}
+    labels:
+      category: business
+      app: people
+    values:
+      - values/people.yaml.gotmpl
+
+  # -------------------------------------------
+  # CONVERSATIONS
+  # -------------------------------------------
+  - name: conversations
+    namespace: lasuite-conversations
+    chart: conversations/conversations
+    version: {{ .Values.laSuiteChartVersions.conversations | quote }}
+    condition: apps.conversations.enabled
+    needs:
+      - lasuite-config/platform-configuration
+      {{- if .Values.postgres.enabled }}
+      - lasuite-postgresql/lasuite-postgresql
+      {{- end }}
+      {{- if .Values.redis.enabled }}
+      - lasuite-redis/redis
+      {{- end }}
+      {{- if .Values.keycloak.enabled }}
+      - lasuite-keycloak/keycloak
+      {{- end }}
+      {{- if .Values.minio.enabled }}
+      - lasuite-minio/minio
+      {{- end }}
+    labels:
+      category: business
+      app: conversations
+    values:
+      - values/conversations.yaml.gotmpl
+
+  # -------------------------------------------
+  # FIND
+  # -------------------------------------------
+  - name: find
+    namespace: lasuite-find
+    chart: find/find
+    version: {{ .Values.laSuiteChartVersions.find | quote }}
+    condition: apps.find.enabled
+    needs:
+      - lasuite-config/platform-configuration
+      {{- if .Values.postgres.enabled }}
+      - lasuite-postgresql/lasuite-postgresql
+      {{- end }}
+      {{- if .Values.redis.enabled }}
+      - lasuite-redis/redis
+      {{- end }}
+      {{- if .Values.keycloak.enabled }}
+      - lasuite-keycloak/keycloak
+      {{- end }}
+      {{- if index .Values "opensearch" "enabled" | default false }}
+      - lasuite-opensearch/opensearch
+      {{- end }}
+    labels:
+      category: business
+      app: find
+    values:
+      - values/find.yaml.gotmpl

@@ -1,0 +1,101 @@
+# Find - Cross-app search engine
+image:
+  repository: lasuite/find-backend
+  pullPolicy: IfNotPresent
+  tag: latest
+
+# Main Ingress
+ingress:
+  enabled: true
+  className: {{ .Values._common.ingress.className }}
+  host: find.{{ .Values.domain }}
+  annotations:
+{{ .Values._common.ingress.annotations | toYaml | indent 4 }}
+  tls:
+    enabled: true
+    secretName: find-tls
+
+# Admin Ingress
+ingressAdmin:
+  enabled: true
+  className: {{ .Values._common.ingress.className }}
+  host: find.{{ .Values.domain }}
+  annotations:
+{{ .Values._common.ingress.annotations | toYaml | indent 4 }}
+  tls:
+    enabled: true
+    secretName: find-tls
+
+# Backend
+backend:
+  replicas: 1
+  envVars:
+    # Django admin
+    DJANGO_SUPERUSER_EMAIL: {{ .Values.adminEmail }}
+    DJANGO_SUPERUSER_PASSWORD:
+      secretKeyRef:
+        name: find-secrets
+        key: DJANGO_SUPERUSER_PASSWORD
+    DJANGO_CONFIGURATION: Production
+    DJANGO_SETTINGS_MODULE: find.settings
+    DJANGO_ALLOWED_HOSTS: find.{{ .Values.domain }}
+    DJANGO_CSRF_TRUSTED_ORIGINS: https://find.{{ .Values.domain }}
+    DJANGO_SECRET_KEY:
+      secretKeyRef:
+        name: find-secrets
+        key: DJANGO_SECRET_KEY
+    # Database
+    DB_HOST: {{ .Values._common.services.postgres.host }}
+    DB_PORT: "{{ .Values._common.services.postgres.port }}"
+    DB_NAME: find
+    DB_USER: find
+    DB_PASSWORD:
+      secretKeyRef:
+        name: find-secrets
+        key: DB_PASSWORD
+    # Redis
+    REDIS_URL:
+      secretKeyRef:
+        name: find-secrets
+        key: REDIS_URL
+    DJANGO_CELERY_BROKER_URL:
+      secretKeyRef:
+        name: find-secrets
+        key: DJANGO_CELERY_BROKER_URL
+    # OpenSearch
+    OPENSEARCH_HOST: {{ .Values._common.services.opensearch.host }}
+    OPENSEARCH_PORT: "{{ .Values._common.services.opensearch.port }}"
+    OPENSEARCH_USER: admin
+    OPENSEARCH_PASSWORD:
+      secretKeyRef:
+        name: find-secrets
+        key: OPENSEARCH_PASSWORD
+    OPENSEARCH_USE_SSL: "false"
+    # Static files
+    STORAGES_STATICFILES_BACKEND: django.contrib.staticfiles.storage.StaticFilesStorage
+    # OIDC - Browser redirects (external)
+    OIDC_OP_AUTHORIZATION_ENDPOINT: {{ .Values._common.oidc.authorizationEndpoint }}
+    OIDC_OP_LOGOUT_ENDPOINT: {{ .Values._common.oidc.logoutEndpoint }}
+    # OIDC - Backend-to-backend (internal)
+    OIDC_OP_JWKS_ENDPOINT: {{ .Values._common.oidc.jwksEndpoint }}
+    OIDC_OP_TOKEN_ENDPOINT: {{ .Values._common.oidc.tokenEndpoint }}
+    OIDC_OP_USER_ENDPOINT: {{ .Values._common.oidc.userEndpoint }}
+    OIDC_RP_CLIENT_ID: find
+    OIDC_RP_CLIENT_SECRET:
+      secretKeyRef:
+        name: find-secrets
+        key: OIDC_RP_CLIENT_SECRET
+    OIDC_RP_SIGN_ALGO: {{ .Values._common.oidc.signAlgo }}
+    OIDC_RP_SCOPES: {{ .Values._common.oidc.scopes | quote }}
+    OIDC_VERIFY_SSL: {{ .Values._common.oidc.verifySsl | quote }}
+    # OIDC Resource Server (token introspection for API access)
+    OIDC_RS_CLIENT_ID: find
+    OIDC_RS_CLIENT_SECRET:
+      secretKeyRef:
+        name: find-secrets
+        key: OIDC_RP_CLIENT_SECRET
+    OIDC_RS_INTROSPECTION_ENDPOINT: {{ .Values._common.oidc.introspectionEndpoint }}
+    # Redirects
+    LOGIN_REDIRECT_URL: https://find.{{ .Values.domain }}
+    LOGIN_REDIRECT_URL_FAILURE: https://find.{{ .Values.domain }}
+    LOGOUT_REDIRECT_URL: https://find.{{ .Values.domain }}

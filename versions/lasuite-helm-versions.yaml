@@ -3,8 +3,9 @@ laSuiteChartVersions:
   docs: "4.4.0"
   meet: "0.0.15"
   drive: "0.11.1"
-  desk: "0.0.7"
-  conversations: "0.0.4"
+  people: "0.0.7"
+  conversations: "0.0.5"
+  find: "0.0.3"
 
 # Image version overrides
 # By default, image tags are derived from chart versions (v{laSuiteChartVersions.X}).

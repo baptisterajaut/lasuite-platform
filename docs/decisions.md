@@ -42,7 +42,7 @@ The [suitenumerique](https://github.com/suitenumerique) GitHub organization cont
 | **Docs** | `docs` | Enabled | Collaborative document editing |
 | **Meet** | `meet` | Enabled | Video conferencing with LiveKit |
 | **Drive** | `drive` | Enabled | File storage and sharing |
-| **Desk** | `people` | Disabled | Team/user management |
+| **People** | `people` | Disabled | Team/user management |
 | **Conversations** | `conversations` | Disabled | AI chatbot (requires LLM) |
 
 ### Applications without Helm charts
@@ -214,13 +214,13 @@ To enable Conversations:
 2. Set `apps.conversations.enabled: true`
 3. Configure LLM endpoint in Conversations values
 
-### Desk (People): team management
+### People: team management
 
-Desk is **disabled by default** because:
+People is **disabled by default** because:
 
 - **Optional for basic deployments** - Keycloak already handles authentication
 - **Useful for multi-tenant setups** - Adds value when managing multiple teams/organizations
-- **Early stage** - Chart is still v0.0.7
+- **Early stage** - Chart (`desk`) is still v0.0.7
 
 ## Infrastructure choices
 

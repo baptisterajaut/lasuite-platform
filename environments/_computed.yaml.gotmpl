@@ -9,6 +9,7 @@
 {{- $postgres := index .Values "postgres" | default dict }}
 {{- $redis := index .Values "redis" | default dict }}
 {{- $s3 := index .Values "s3" | default dict }}
+{{- $opensearch := index .Values "opensearch" | default dict }}
 {{- $ingress := index .Values "ingress" | default dict }}
 {{- $tls := index .Values "tls" | default dict }}
 {{- $domain := index .Values "domain" | default "suite.local" }}
@@ -51,6 +52,9 @@ _common:
       endpoint: {{ index $s3 "endpoint" | default "http://minio.lasuite-minio.svc.cluster.local:9000" }}
       host: {{ index $s3 "host" | default "minio.lasuite-minio.svc.cluster.local" }}
       port: {{ index $s3 "port" | default 9000 }}
+    opensearch:
+      host: {{ index $opensearch "host" | default "opensearch-cluster-master.lasuite-opensearch.svc.cluster.local" }}
+      port: {{ index $opensearch "port" | default 9200 }}
 
   # -------------------------------------------
   # INGRESS DEFAULTS
@@ -71,6 +75,8 @@ _common:
     jwksEndpoint: {{ $kcBackendUrl }}/realms/{{ $kcRealm }}/protocol/openid-connect/certs
     tokenEndpoint: {{ $kcBackendUrl }}/realms/{{ $kcRealm }}/protocol/openid-connect/token
     userEndpoint: {{ $kcBackendUrl }}/realms/{{ $kcRealm }}/protocol/openid-connect/userinfo
+    # Token introspection (for Resource Server mode, used by Find)
+    introspectionEndpoint: {{ $kcBackendUrl }}/realms/{{ $kcRealm }}/protocol/openid-connect/token/introspect
     # Common settings
     signAlgo: RS256
     scopes: "openid email"
