@@ -17,7 +17,7 @@ livekit:
     port_range_end: 60000
     tcp_port: 7881
   redis:
-    address: {{ .Values._common.services.redis.host }}:{{ .Values._common.services.redis.port }}
+    address: {{ .Values.redis.host }}:{{ .Values.redis.port }}
     password: {{ template "lk-secret" (list .Values.secretSeed "redis") }}
   turn:
     enabled: false

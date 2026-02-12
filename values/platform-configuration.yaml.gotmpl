@@ -38,7 +38,9 @@ apps:
 
 keycloak:
   enabled: {{ .Values.keycloak.enabled }}
-  realm: {{ .Values._common.keycloak.realm | quote }}
+  realm: {{ .Values.keycloak.realm | quote }}
+  externalUrl: {{ .Values.keycloak.externalUrl | quote }}
+  backendUrl: {{ .Values.keycloak.backendUrl | quote }}
   testUser:
     enabled: {{ .Values.keycloak.testUser.enabled | default false }}
     username: {{ .Values.keycloak.testUser.username | default "user" | quote }}
@@ -46,19 +48,19 @@ keycloak:
     password: {{ .Values.keycloak.testUser.password | default "password" | quote }}
 
 postgres:
-  host: {{ .Values._common.services.postgres.host | quote }}
-  port: {{ .Values._common.services.postgres.port }}
+  host: {{ .Values.postgres.host | quote }}
+  port: {{ .Values.postgres.port }}
 
 redis:
-  host: {{ .Values._common.services.redis.host | quote }}
-  port: {{ .Values._common.services.redis.port }}
+  host: {{ .Values.redis.host | quote }}
+  port: {{ .Values.redis.port }}
 
 s3:
-  endpoint: {{ .Values._common.services.s3.endpoint | quote }}
+  endpoint: {{ .Values.s3.endpoint | quote }}
 
 opensearch:
-  host: {{ .Values._common.services.opensearch.host | quote }}
-  port: {{ .Values._common.services.opensearch.port }}
+  host: {{ .Values.opensearch.host | quote }}
+  port: {{ .Values.opensearch.port }}
 
 tls:
   issuer: {{ .Values.tls.issuer | quote }}
@@ -67,4 +69,4 @@ tls:
 {{- end }}
 
 ingress:
-  className: {{ .Values._common.ingress.className }}
+  className: {{ .Values.ingress.className }}

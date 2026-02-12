@@ -105,7 +105,6 @@ environments:
       - versions/lasuite-helm-versions.yaml
       - environments/my-env.yaml
       - environments/my-env.secret-overrides.yaml  # Add this
-      - environments/_computed.yaml.gotmpl
 ```
 
 ### Method 2: Inline in environment file

@@ -1,0 +1,65 @@
+# Static defaults — loaded FIRST, before environment files.
+# Override any value in your environment file (e.g. local.yaml, production.yaml).
+
+domain: suite.local
+adminEmail: admin@suite.local
+
+apps:
+  docs:
+    enabled: true
+  meet:
+    enabled: false
+  drive:
+    enabled: true
+  people:
+    enabled: true
+  find:
+    enabled: false
+  conversations:
+    enabled: false
+
+postgres:
+  enabled: true
+  host: lasuite-postgresql.lasuite-postgresql.svc.cluster.local
+  port: 5432
+
+keycloak:
+  enabled: true
+  realm: lasuite
+  externalUrl: ""
+  backendUrl: http://keycloak-keycloakx-http.lasuite-keycloak.svc.cluster.local
+
+redis:
+  enabled: true
+  host: redis-master.lasuite-redis.svc.cluster.local
+  port: 6379
+
+minio:
+  enabled: true
+
+livekit:
+  enabled: false
+
+opensearch:
+  enabled: false
+  host: opensearch-cluster-master.lasuite-opensearch.svc.cluster.local
+  port: 9200
+
+s3:
+  provider: minio
+  endpoint: http://minio.lasuite-minio.svc.cluster.local:9000
+  host: minio.lasuite-minio.svc.cluster.local
+  port: 9000
+
+ingress:
+  enabled: true
+  className: haproxy
+
+certManager:
+  enabled: true
+
+reflector:
+  enabled: true
+
+tls:
+  issuer: selfsigned

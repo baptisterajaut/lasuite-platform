@@ -11,6 +11,8 @@ appsEnabled: []
 # Keycloak configuration
 keycloak:
   realm: lasuite
+  externalUrl: ""
+  backendUrl: http://keycloak-keycloakx-http.lasuite-keycloak.svc.cluster.local
 
 # PostgreSQL configuration
 postgres:
@@ -28,6 +30,11 @@ redis:
 s3:
   useExisting: false
   endpoint: http://minio.lasuite-minio.svc.cluster.local:9000
+
+# OpenSearch configuration
+opensearch:
+  host: opensearch-cluster-master.lasuite-opensearch.svc.cluster.local
+  port: 9200
 
 # TLS configuration
 tls:

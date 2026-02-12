@@ -181,7 +181,6 @@ case ${CHOICE} in
         echo "      - versions/backend-helm-versions.yaml"
         echo "      - versions/lasuite-helm-versions.yaml"
         echo "      - environments/${ENV_NAME}.yaml"
-        echo "      - environments/_computed.yaml.gotmpl"
         echo ""
         echo "Before deploying, configure DNS records pointing to your cluster:"
         echo "  docs.${DOMAIN}"

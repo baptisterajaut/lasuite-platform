@@ -7,10 +7,10 @@ image:
 # Main Ingress
 ingress:
   enabled: true
-  className: {{ .Values._common.ingress.className }}
+  className: {{ .Values.ingress.className }}
   host: people.{{ .Values.domain }}
   annotations:
-{{ .Values._common.ingress.annotations | toYaml | indent 4 }}
+    cert-manager.io/cluster-issuer: {{ .Values.tls.issuer }}
   tls:
     enabled: true
     secretName: people-tls
@@ -18,10 +18,10 @@ ingress:
 # Admin Ingress
 ingressAdmin:
   enabled: true
-  className: {{ .Values._common.ingress.className }}
+  className: {{ .Values.ingress.className }}
   host: people.{{ .Values.domain }}
   annotations:
-{{ .Values._common.ingress.annotations | toYaml | indent 4 }}
+    cert-manager.io/cluster-issuer: {{ .Values.tls.issuer }}
   tls:
     enabled: true
     secretName: people-tls
@@ -58,8 +58,14 @@ backend:
     # Plugins
     INSTALLED_PLUGINS: plugins.la_suite
     # Database
-    DB_HOST: {{ .Values._common.services.postgres.host }}
-    DB_PORT: "{{ .Values._common.services.postgres.port }}"
+    DB_HOST:
+      configMapKeyRef:
+        name: infra-urls
+        key: POSTGRES_HOST
+    DB_PORT:
+      configMapKeyRef:
+        name: infra-urls
+        key: POSTGRES_PORT
     DB_NAME: people
     DB_USER: people
     DB_PASSWORD:
@@ -76,7 +82,10 @@ backend:
         name: people-secrets
         key: DJANGO_CELERY_BROKER_URL
     # S3
-    AWS_S3_ENDPOINT_URL: {{ .Values._common.services.s3.endpoint }}
+    AWS_S3_ENDPOINT_URL:
+      configMapKeyRef:
+        name: infra-urls
+        key: S3_ENDPOINT
     AWS_STORAGE_BUCKET_NAME: people-media-storage
     AWS_S3_ACCESS_KEY_ID:
       secretKeyRef:
@@ -87,26 +96,50 @@ backend:
         name: people-secrets
         key: AWS_S3_SECRET_ACCESS_KEY
     STORAGES_STATICFILES_BACKEND: django.contrib.staticfiles.storage.StaticFilesStorage
-    {{- if eq .Values._common.services.s3.provider "oos" }}
+    {{- if eq .Values.s3.provider "oos" }}
     # OOS (Outscale) compatibility - disable checksum for older SDK compat
     AWS_REQUEST_CHECKSUM_CALCULATION: WHEN_REQUIRED
     AWS_RESPONSE_CHECKSUM_VALIDATION: WHEN_REQUIRED
     {{- end }}
     # OIDC - Browser redirects (external)
-    OIDC_OP_AUTHORIZATION_ENDPOINT: {{ .Values._common.oidc.authorizationEndpoint }}
-    OIDC_OP_LOGOUT_ENDPOINT: {{ .Values._common.oidc.logoutEndpoint }}
+    OIDC_OP_AUTHORIZATION_ENDPOINT:
+      configMapKeyRef:
+        name: infra-urls
+        key: OIDC_OP_AUTHORIZATION_ENDPOINT
+    OIDC_OP_LOGOUT_ENDPOINT:
+      configMapKeyRef:
+        name: infra-urls
+        key: OIDC_OP_LOGOUT_ENDPOINT
     # OIDC - Backend-to-backend (internal)
-    OIDC_OP_JWKS_ENDPOINT: {{ .Values._common.oidc.jwksEndpoint }}
-    OIDC_OP_TOKEN_ENDPOINT: {{ .Values._common.oidc.tokenEndpoint }}
-    OIDC_OP_USER_ENDPOINT: {{ .Values._common.oidc.userEndpoint }}
+    OIDC_OP_JWKS_ENDPOINT:
+      configMapKeyRef:
+        name: infra-urls
+        key: OIDC_OP_JWKS_ENDPOINT
+    OIDC_OP_TOKEN_ENDPOINT:
+      configMapKeyRef:
+        name: infra-urls
+        key: OIDC_OP_TOKEN_ENDPOINT
+    OIDC_OP_USER_ENDPOINT:
+      configMapKeyRef:
+        name: infra-urls
+        key: OIDC_OP_USER_ENDPOINT
     OIDC_RP_CLIENT_ID: people
     OIDC_RP_CLIENT_SECRET:
       secretKeyRef:
         name: people-secrets
         key: OIDC_RP_CLIENT_SECRET
-    OIDC_RP_SIGN_ALGO: {{ .Values._common.oidc.signAlgo }}
-    OIDC_RP_SCOPES: {{ .Values._common.oidc.scopes | quote }}
-    OIDC_VERIFY_SSL: {{ .Values._common.oidc.verifySsl | quote }}
+    OIDC_RP_SIGN_ALGO:
+      configMapKeyRef:
+        name: infra-urls
+        key: OIDC_RP_SIGN_ALGO
+    OIDC_RP_SCOPES:
+      configMapKeyRef:
+        name: infra-urls
+        key: OIDC_RP_SCOPES
+    OIDC_VERIFY_SSL:
+      configMapKeyRef:
+        name: infra-urls
+        key: OIDC_VERIFY_SSL
     # Redirects
     LOGIN_REDIRECT_URL: https://people.{{ .Values.domain }}
     LOGIN_REDIRECT_URL_FAILURE: https://people.{{ .Values.domain }}
@@ -124,8 +157,14 @@ celeryWorker:
       secretKeyRef:
         name: people-secrets
         key: DJANGO_SECRET_KEY
-    DB_HOST: {{ .Values._common.services.postgres.host }}
-    DB_PORT: "{{ .Values._common.services.postgres.port }}"
+    DB_HOST:
+      configMapKeyRef:
+        name: infra-urls
+        key: POSTGRES_HOST
+    DB_PORT:
+      configMapKeyRef:
+        name: infra-urls
+        key: POSTGRES_PORT
     DB_NAME: people
     DB_USER: people
     DB_PASSWORD:
@@ -151,8 +190,14 @@ celeryBeat:
       secretKeyRef:
         name: people-secrets
         key: DJANGO_SECRET_KEY
-    DB_HOST: {{ .Values._common.services.postgres.host }}
-    DB_PORT: "{{ .Values._common.services.postgres.port }}"
+    DB_HOST:
+      configMapKeyRef:
+        name: infra-urls
+        key: POSTGRES_HOST
+    DB_PORT:
+      configMapKeyRef:
+        name: infra-urls
+        key: POSTGRES_PORT
     DB_NAME: people
     DB_USER: people
     DB_PASSWORD:

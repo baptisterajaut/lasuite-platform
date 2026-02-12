@@ -20,11 +20,11 @@ resources:
 
 ingress:
   enabled: true
-  ingressClassName: {{ .Values._common.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
   hosts:
     - minio.{{ .Values.domain }}
   annotations:
-{{ .Values._common.ingress.annotations | toYaml | indent 4 }}
+    cert-manager.io/cluster-issuer: {{ .Values.tls.issuer }}
   tls:
     - secretName: minio-tls
       hosts:
@@ -32,11 +32,11 @@ ingress:
 
 consoleIngress:
   enabled: true
-  ingressClassName: {{ .Values._common.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
   hosts:
     - minio-console.{{ .Values.domain }}
   annotations:
-{{ .Values._common.ingress.annotations | toYaml | indent 4 }}
+    cert-manager.io/cluster-issuer: {{ .Values.tls.issuer }}
   tls:
     - secretName: minio-console-tls
       hosts:

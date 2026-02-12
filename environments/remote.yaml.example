@@ -25,7 +25,7 @@ keycloak:
   realm: lasuite
   # URL overrides (optional when enabled: true, required when enabled: false)
   externalUrl: ""         # Empty = use auth.{domain}, or set to external URL like https://sso.example.com
-  backendUrl: ""          # Empty = use internal service (or externalUrl if set)
+  backendUrl: http://keycloak-keycloakx-http.lasuite-keycloak.svc.cluster.local  # Internal service URL (override when using external Keycloak)
 
 redis:
   enabled: false

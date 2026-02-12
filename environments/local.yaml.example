@@ -15,56 +15,12 @@ apps:
   conversations:
     enabled: false    # requires LLM backend (not included)
 
-postgres:
-  enabled: true
-  host: lasuite-postgresql.lasuite-postgresql.svc.cluster.local
-  port: 5432
-
 keycloak:
-  enabled: true
-  realm: lasuite
-  externalUrl: ""
-  backendUrl: ""
   testUser:
     enabled: true
     username: user
     email: user@example.com
     password: password
-
-redis:
-  enabled: true
-  host: redis-master.lasuite-redis.svc.cluster.local
-  port: 6379
-
-minio:
-  enabled: true
-
-livekit:
-  enabled: false    # enable with meet
-
-opensearch:
-  enabled: false    # enable with find
-  host: opensearch-cluster-master.lasuite-opensearch.svc.cluster.local
-  port: 9200
-
-s3:
-  provider: minio
-  endpoint: http://minio.lasuite-minio.svc.cluster.local:9000
-  host: minio.lasuite-minio.svc.cluster.local
-  port: 9000
-
-ingress:
-  enabled: true
-  className: haproxy
-
-certManager:
-  enabled: true
-
-reflector:
-  enabled: true
-
-tls:
-  issuer: selfsigned
 
 # Generate with: openssl rand -hex 24
 secretSeed: "REPLACE_ME"

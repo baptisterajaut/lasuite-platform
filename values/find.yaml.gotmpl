@@ -7,10 +7,10 @@ image:
 # Main Ingress
 ingress:
   enabled: true
-  className: {{ .Values._common.ingress.className }}
+  className: {{ .Values.ingress.className }}
   host: find.{{ .Values.domain }}
   annotations:
-{{ .Values._common.ingress.annotations | toYaml | indent 4 }}
+    cert-manager.io/cluster-issuer: {{ .Values.tls.issuer }}
   tls:
     enabled: true
     secretName: find-tls
@@ -18,10 +18,10 @@ ingress:
 # Admin Ingress
 ingressAdmin:
   enabled: true
-  className: {{ .Values._common.ingress.className }}
+  className: {{ .Values.ingress.className }}
   host: find.{{ .Values.domain }}
   annotations:
-{{ .Values._common.ingress.annotations | toYaml | indent 4 }}
+    cert-manager.io/cluster-issuer: {{ .Values.tls.issuer }}
   tls:
     enabled: true
     secretName: find-tls
@@ -45,8 +45,14 @@ backend:
         name: find-secrets
         key: DJANGO_SECRET_KEY
     # Database
-    DB_HOST: {{ .Values._common.services.postgres.host }}
-    DB_PORT: "{{ .Values._common.services.postgres.port }}"
+    DB_HOST:
+      configMapKeyRef:
+        name: infra-urls
+        key: POSTGRES_HOST
+    DB_PORT:
+      configMapKeyRef:
+        name: infra-urls
+        key: POSTGRES_PORT
     DB_NAME: find
     DB_USER: find
     DB_PASSWORD:
@@ -63,8 +69,14 @@ backend:
         name: find-secrets
         key: DJANGO_CELERY_BROKER_URL
     # OpenSearch
-    OPENSEARCH_HOST: {{ .Values._common.services.opensearch.host }}
-    OPENSEARCH_PORT: "{{ .Values._common.services.opensearch.port }}"
+    OPENSEARCH_HOST:
+      configMapKeyRef:
+        name: infra-urls
+        key: OPENSEARCH_HOST
+    OPENSEARCH_PORT:
+      configMapKeyRef:
+        name: infra-urls
+        key: OPENSEARCH_PORT
     OPENSEARCH_USER: admin
     OPENSEARCH_PASSWORD:
       secretKeyRef:
@@ -74,27 +86,54 @@ backend:
     # Static files
     STORAGES_STATICFILES_BACKEND: django.contrib.staticfiles.storage.StaticFilesStorage
     # OIDC - Browser redirects (external)
-    OIDC_OP_AUTHORIZATION_ENDPOINT: {{ .Values._common.oidc.authorizationEndpoint }}
-    OIDC_OP_LOGOUT_ENDPOINT: {{ .Values._common.oidc.logoutEndpoint }}
+    OIDC_OP_AUTHORIZATION_ENDPOINT:
+      configMapKeyRef:
+        name: infra-urls
+        key: OIDC_OP_AUTHORIZATION_ENDPOINT
+    OIDC_OP_LOGOUT_ENDPOINT:
+      configMapKeyRef:
+        name: infra-urls
+        key: OIDC_OP_LOGOUT_ENDPOINT
     # OIDC - Backend-to-backend (internal)
-    OIDC_OP_JWKS_ENDPOINT: {{ .Values._common.oidc.jwksEndpoint }}
-    OIDC_OP_TOKEN_ENDPOINT: {{ .Values._common.oidc.tokenEndpoint }}
-    OIDC_OP_USER_ENDPOINT: {{ .Values._common.oidc.userEndpoint }}
+    OIDC_OP_JWKS_ENDPOINT:
+      configMapKeyRef:
+        name: infra-urls
+        key: OIDC_OP_JWKS_ENDPOINT
+    OIDC_OP_TOKEN_ENDPOINT:
+      configMapKeyRef:
+        name: infra-urls
+        key: OIDC_OP_TOKEN_ENDPOINT
+    OIDC_OP_USER_ENDPOINT:
+      configMapKeyRef:
+        name: infra-urls
+        key: OIDC_OP_USER_ENDPOINT
     OIDC_RP_CLIENT_ID: find
     OIDC_RP_CLIENT_SECRET:
       secretKeyRef:
         name: find-secrets
         key: OIDC_RP_CLIENT_SECRET
-    OIDC_RP_SIGN_ALGO: {{ .Values._common.oidc.signAlgo }}
-    OIDC_RP_SCOPES: {{ .Values._common.oidc.scopes | quote }}
-    OIDC_VERIFY_SSL: {{ .Values._common.oidc.verifySsl | quote }}
+    OIDC_RP_SIGN_ALGO:
+      configMapKeyRef:
+        name: infra-urls
+        key: OIDC_RP_SIGN_ALGO
+    OIDC_RP_SCOPES:
+      configMapKeyRef:
+        name: infra-urls
+        key: OIDC_RP_SCOPES
+    OIDC_VERIFY_SSL:
+      configMapKeyRef:
+        name: infra-urls
+        key: OIDC_VERIFY_SSL
     # OIDC Resource Server (token introspection for API access)
     OIDC_RS_CLIENT_ID: find
     OIDC_RS_CLIENT_SECRET:
       secretKeyRef:
         name: find-secrets
         key: OIDC_RP_CLIENT_SECRET
-    OIDC_RS_INTROSPECTION_ENDPOINT: {{ .Values._common.oidc.introspectionEndpoint }}
+    OIDC_RS_INTROSPECTION_ENDPOINT:
+      configMapKeyRef:
+        name: infra-urls
+        key: OIDC_OP_INTROSPECTION_ENDPOINT
     # Redirects
     LOGIN_REDIRECT_URL: https://find.{{ .Values.domain }}
     LOGIN_REDIRECT_URL_FAILURE: https://find.{{ .Values.domain }}

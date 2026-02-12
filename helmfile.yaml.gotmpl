@@ -46,18 +46,18 @@ helmDefaults:
 environments:
   local:
     values:
+      - environments/_defaults.yaml
       - versions/backend-helm-versions.yaml
       - versions/lasuite-helm-versions.yaml
       - environments/local.yaml
-      - environments/_computed.yaml.gotmpl
 
   # Template for remote deployments - copy and adapt
+  # Remote environments are self-contained (no _defaults.yaml).
   # remote-example:
   #   values:
   #     - versions/backend-helm-versions.yaml
   #     - versions/lasuite-helm-versions.yaml
   #     - environments/<name>.yaml
-  #     - environments/_computed.yaml.gotmpl
 
 ---
 # ===========================================

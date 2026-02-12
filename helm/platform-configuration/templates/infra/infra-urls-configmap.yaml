@@ -1,0 +1,42 @@
+{{- $appNamespaces := list }}
+{{- if .Values.apps.docs.enabled }}{{- $appNamespaces = append $appNamespaces "lasuite-docs" }}{{- end }}
+{{- if .Values.apps.meet.enabled }}{{- $appNamespaces = append $appNamespaces "lasuite-meet" }}{{- end }}
+{{- if .Values.apps.drive.enabled }}{{- $appNamespaces = append $appNamespaces "lasuite-drive" }}{{- end }}
+{{- if .Values.apps.people.enabled }}{{- $appNamespaces = append $appNamespaces "lasuite-people" }}{{- end }}
+{{- if .Values.apps.conversations.enabled }}{{- $appNamespaces = append $appNamespaces "lasuite-conversations" }}{{- end }}
+{{- if .Values.apps.find.enabled }}{{- $appNamespaces = append $appNamespaces "lasuite-find" }}{{- end }}
+{{- $namespaces := join "," $appNamespaces }}
+{{- $kcExternal := .Values.keycloak.externalUrl | default (printf "https://auth.%s" .Values.domain) }}
+{{- $kcBackend := .Values.keycloak.backendUrl | default (printf "http://keycloak-keycloakx-http.lasuite-keycloak.svc.cluster.local") }}
+{{- $kcRealm := .Values.keycloak.realm }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: infra-urls
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "platform-configuration.labels" . | nindent 4 }}
+  {{- if $namespaces }}
+  annotations:
+    {{- include "reflector.annotations" $namespaces | nindent 4 }}
+  {{- end }}
+data:
+  # Infrastructure endpoints
+  POSTGRES_HOST: "{{ .Values.postgres.host }}"
+  POSTGRES_PORT: "{{ .Values.postgres.port }}"
+  S3_ENDPOINT: "{{ .Values.s3.endpoint }}"
+  OPENSEARCH_HOST: "{{ .Values.opensearch.host }}"
+  OPENSEARCH_PORT: "{{ .Values.opensearch.port }}"
+  # OIDC endpoints — browser redirects (external)
+  OIDC_OP_AUTHORIZATION_ENDPOINT: "{{ $kcExternal }}/realms/{{ $kcRealm }}/protocol/openid-connect/auth"
+  OIDC_OP_LOGOUT_ENDPOINT: "{{ $kcExternal }}/realms/{{ $kcRealm }}/protocol/openid-connect/logout"
+  # OIDC endpoints — backend-to-backend (internal)
+  OIDC_OP_JWKS_ENDPOINT: "{{ $kcBackend }}/realms/{{ $kcRealm }}/protocol/openid-connect/certs"
+  OIDC_OP_TOKEN_ENDPOINT: "{{ $kcBackend }}/realms/{{ $kcRealm }}/protocol/openid-connect/token"
+  OIDC_OP_USER_ENDPOINT: "{{ $kcBackend }}/realms/{{ $kcRealm }}/protocol/openid-connect/userinfo"
+  OIDC_OP_INTROSPECTION_ENDPOINT: "{{ $kcBackend }}/realms/{{ $kcRealm }}/protocol/openid-connect/token/introspect"
+  # OIDC settings
+  OIDC_RP_SIGN_ALGO: "RS256"
+  OIDC_RP_SCOPES: "openid email"
+  OIDC_VERIFY_SSL: {{ if eq .Values.tls.issuer "selfsigned" }}"false"{{ else }}"true"{{ end }}
