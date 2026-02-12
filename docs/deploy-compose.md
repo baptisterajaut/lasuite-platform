@@ -1,15 +1,15 @@
 # Deploy with Docker Compose
 
-Run La Suite locally (or hobby-grade) without Kubernetes using Docker Compose + Caddy reverse proxy.
+Run La Suite without a Kubernetes cluster. The `generate-compose.sh` script
+converts the same Helmfile charts into a `compose.yml` + `Caddyfile`, using
+[helmfile2compose](https://github.com/baptisterajaut/helmfile2compose).
 
-The `compose.yml` is a **generated build artifact** — never edit it directly. All configuration goes through helmfile values and `helmfile2compose.yaml`. Re-run `./generate-compose.sh` to regenerate.
+## What you need
 
-## Prerequisites
-
-- **helmfile** + **helm** (renders K8s manifests from charts)
-- **Python 3.10+** with `pyyaml` (`pip install pyyaml`)
-- **Docker** or **nerdctl** with compose support
-- **openssl** (generates secrets)
+- Docker or a compatible runtime (`nerdctl`, `podman`) with compose support
+- [Helm](https://helm.sh/) v3 and [Helmfile](https://github.com/helmfile/helmfile) v0.150+
+- Python 3 with `pyyaml` (`pip install pyyaml`)
+- `openssl`
 
 ## Quick start
 
@@ -73,6 +73,8 @@ All secrets are derived from a single `secretSeed` (generated on first run).
 
 ## Configuration
 
+The `compose.yml` and `Caddyfile` are **generated** — never edit them directly. All configuration goes through the files below. Re-run `./generate-compose.sh` to regenerate.
+
 ### `environments/compose.yaml`
 
 Generated from `compose.yaml.template` on first run. Controls:
@@ -98,7 +100,7 @@ For the full config file reference, see [helmfile2compose architecture](https://
 
 Not generated — create manually if needed. Auto-loaded by `docker compose up`.
 
-On ARM64 (Apple Silicon), some La Suite images have broken multi-arch manifests. See [known limitations](known-limitations.md#broken-multi-arch-manifests) for the workaround using `compose.override.yml`.
+On ARM64 (Apple Silicon), some La Suite images have broken manifests. See [known limitations](known-limitations.md#broken-docker-images-arm64--invalid-user) for the workaround using `compose.override.yml`.
 
 ### Enabling Conversations (AI)
 
