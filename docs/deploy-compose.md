@@ -11,6 +11,8 @@ converts the same Helmfile charts into a `compose.yml` + `Caddyfile`, using
 - Python 3 with `pyyaml` (`pip install pyyaml`)
 - `openssl`
 
+> **Bind mount permissions:** Bitnami images (PostgreSQL, Redis) run as UID 1001 and may fail with `permission denied` on host-mounted data directories owned by your user (UID 1000). This is handled automatically by an init container on first run.
+
 ## Quick start
 
 ```bash
