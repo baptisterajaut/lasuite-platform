@@ -13,8 +13,8 @@ livekit:
   log_level: info
   rtc:
     use_external_ip: false
-    port_range_start: 50000
-    port_range_end: 60000
+    port_range_start: {{ .Values.livekit.rtcPortRangeStart | default 50000 }}
+    port_range_end: {{ .Values.livekit.rtcPortRangeEnd | default 60000 }}
     tcp_port: 7881
   redis:
     address: {{ .Values.redis.host }}:{{ .Values.redis.port }}

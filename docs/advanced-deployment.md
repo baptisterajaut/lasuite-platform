@@ -34,32 +34,7 @@ SEED=$(grep secretSeed environments/local.yaml | cut -d'"' -f2)
 echo -n "${SEED}:docs-db" | shasum -a 256 | cut -c1-50
 ```
 
-Identifiers used:
-
-| Identifier | Usage |
-|------------|-------|
-| `postgres-admin` | PostgreSQL admin password |
-| `postgres` | PostgreSQL app user password |
-| `keycloak-db` | Keycloak database password |
-| `keycloak-admin` | Keycloak admin console password |
-| `docs-db` | Docs DB password |
-| `meet-db` | Meet DB password |
-| `drive-db` | Drive DB password |
-| `people-db` | People DB password |
-| `conversations-db` | Conversations DB password |
-| `find-db` | Find DB password |
-| `redis` | Redis password |
-| `s3-access` | S3 access key |
-| `s3-secret` | S3 secret key |
-| `docs-oidc-client` | Docs OIDC client secret |
-| `meet-oidc-client` | Meet OIDC client secret |
-| `drive-oidc-client` | Drive OIDC client secret |
-| `people-oidc-client` | People OIDC client secret |
-| `conversations-oidc-client` | Conversations OIDC client secret |
-| `find-oidc-client` | Find OIDC client secret |
-| `livekit-api-key` | LiveKit API key |
-| `livekit-api-secret` | LiveKit API secret |
-| `opensearch-admin` | OpenSearch admin password |
+See [Available Identifiers](#available-identifiers) for the full list.
 
 > **Note**: Keycloak credentials (`keycloak-db`, `keycloak-admin`) are derived in `values/keycloak.yaml.gotmpl`, not in platform-configuration.
 
@@ -142,12 +117,18 @@ This means you can mix derived and custom secrets:
 | `docs-db` | Docs database password |
 | `meet-db` | Meet database password |
 | `drive-db` | Drive database password |
+| `people-db` | People database password |
+| `conversations-db` | Conversations database password |
+| `find-db` | Find database password |
 | `redis` | Redis password |
 | `s3-access` | S3 access key |
 | `s3-secret` | S3 secret key |
 | `docs-oidc-client` | Docs OIDC client secret |
 | `meet-oidc-client` | Meet OIDC client secret |
 | `drive-oidc-client` | Drive OIDC client secret |
+| `people-oidc-client` | People OIDC client secret |
+| `conversations-oidc-client` | Conversations OIDC client secret |
+| `find-oidc-client` | Find OIDC client secret |
 | `docs-django-secret` | Docs Django SECRET_KEY |
 | `meet-django-secret` | Meet Django SECRET_KEY |
 | `drive-django-secret` | Drive Django SECRET_KEY |

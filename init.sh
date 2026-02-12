@@ -88,8 +88,13 @@ post_deploy() {
     echo "Done. Access: https://docs.suite.local"
 }
 
+# When sourced by another script, only export functions — don't run main logic
+if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
+    return 0
+fi
+
 # --post-deploy: skip config generation and helmfile sync, run post-deploy only
-if [[ "${1}" == "--post-deploy" ]]; then
+if [[ "${1:-}" == "--post-deploy" ]]; then
     ENV_FILE="${SCRIPT_DIR}/environments/local.yaml"
     if [[ ! -f "${ENV_FILE}" ]]; then
         echo "Error: ${ENV_FILE} not found. Run ./init.sh first."

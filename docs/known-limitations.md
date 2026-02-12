@@ -56,6 +56,12 @@ People's waffle is unconditionally rendered in the header (`LaGaufre.tsx`). The 
 
 **Future fix**: Requires a PR on suitenumerique/people to add a `FRONTEND_HIDE_GAUFRE` env var (same pattern as Drive).
 
+### Conversations
+
+Conversations' waffle is hardcoded in the frontend (`LaGaufre.tsx`). It loads the widget from `https://static.suite.anct.gouv.fr/widgets/lagaufre.js` and fetches services from `https://lasuite.numerique.gouv.fr/api/services`. The `backend.themeCustomization` chart value exists but is unrelated to the waffle — it controls other branding aspects.
+
+**Current state**: Waffle always enabled. Links point to official gouv.fr instances. Cannot be customized without source code changes.
+
 ### Meet
 
 Meet does not have a waffle menu.
@@ -136,17 +142,65 @@ Django app database users are created with SUPERUSER privileges. This is require
 
 ## Docker Images / ARM64
 
-### Broken Multi-arch Manifests
+### Broken Docker Images (ARM64 / invalid USER)
 
-Some La Suite Docker images have broken multi-arch manifests that declare `unknown/unknown` as the platform instead of `linux/amd64`. On ARM64 nodes (e.g., Rancher Desktop on Apple Silicon), containerd refuses to pull these images.
-
-There is no reliable way to force an amd64 pull on ARM64 nodes: `nerdctl --platform linux/amd64`, `ctr` with CRI labels, and digest-based references all fail because kubelet re-resolves the manifest index from the registry.
+Some La Suite Docker images have two upstream issues:
+- **Broken multi-arch manifests** — declare `unknown/unknown` as platform instead of `linux/amd64`. On ARM64 (e.g., Apple Silicon), containerd refuses to pull them.
+- **Invalid USER directive** — `USER 1001:127:-1000` is not a valid UID:GID format.
 
 **Affected images**:
-- `lasuite/conversations-backend:latest`
-- `lasuite/conversations-frontend:latest`
+- `lasuite/impress-backend`, `lasuite/impress-frontend`, `lasuite/impress-y-provider` (Docs)
+- `lasuite/meet-backend`, `lasuite/meet-frontend` (Meet)
+- `lasuite/people-backend`, `lasuite/people-frontend` (People)
+- `lasuite/conversations-backend`, `lasuite/conversations-frontend` (Conversations)
 
-**Consequence**: Conversations cannot be tested on ARM64 nodes until upstream publishes corrected manifests.
+**Kubernetes**: No reliable workaround. `nerdctl pull --platform linux/amd64` works locally, but kubelet re-resolves the manifest index from the registry and ignores locally cached images.
+
+**Docker Compose / nerdctl compose**: Pull with explicit platform, rebuild with a valid USER, tag as `-fixed`:
+
+```bash
+IMAGES=(
+  lasuite/impress-backend:v4.5.0
+  lasuite/impress-frontend:v4.5.0
+  lasuite/impress-y-provider:v4.5.0
+  lasuite/meet-backend:v1.5.0
+  lasuite/meet-frontend:v1.5.0
+  lasuite/people-backend:latest
+  lasuite/people-frontend:latest
+  lasuite/conversations-backend:latest
+  lasuite/conversations-frontend:latest
+)
+
+for img in "${IMAGES[@]}"; do
+  nerdctl pull --platform linux/amd64 "$img"
+  echo "FROM $img
+USER 1001" | nerdctl build --tag "${img}-fixed" -
+done
+```
+
+Then create a `compose.override.yml` to use the fixed tags (see [compose deployment](deploy-compose.md)):
+
+```yaml
+services:
+  docs-backend:
+    image: lasuite/impress-backend:v4.5.0-fixed
+  docs-frontend:
+    image: lasuite/impress-frontend:v4.5.0-fixed
+  docs-y-provider:
+    image: lasuite/impress-y-provider:v4.5.0-fixed
+  meet-backend:
+    image: lasuite/meet-backend:v1.5.0-fixed
+  meet-frontend:
+    image: lasuite/meet-frontend:v1.5.0-fixed
+  people-desk-backend:
+    image: lasuite/people-backend:latest-fixed
+  people-desk-frontend:
+    image: lasuite/people-frontend:latest-fixed
+  conversations-backend:
+    image: lasuite/conversations-backend:latest-fixed
+  conversations-frontend:
+    image: lasuite/conversations-frontend:latest-fixed
+```
 
 ### Drive Celery Beat (chart 0.12.0)
 

@@ -51,6 +51,13 @@ environments:
       - versions/lasuite-helm-versions.yaml
       - environments/local.yaml
 
+  compose:
+    values:
+      - environments/_defaults.yaml
+      - versions/backend-helm-versions.yaml
+      - versions/lasuite-helm-versions.yaml
+      - environments/compose.yaml
+
   # Template for remote deployments - copy and adapt
   # Remote environments are self-contained (no _defaults.yaml).
   # remote-example:

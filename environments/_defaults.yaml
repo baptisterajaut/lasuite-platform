@@ -17,6 +17,10 @@ apps:
     enabled: false
   conversations:
     enabled: false
+    ai:
+      baseUrl: ""
+      model: ""
+      apiKey: ""
 
 postgres:
   enabled: true

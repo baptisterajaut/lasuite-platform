@@ -140,6 +140,16 @@ backend:
       configMapKeyRef:
         name: infra-urls
         key: OIDC_VERIFY_SSL
+    # AI / LLM
+    {{- if .Values.apps.conversations.ai.baseUrl }}
+    AI_BASE_URL: {{ .Values.apps.conversations.ai.baseUrl }}
+    {{- end }}
+    {{- if .Values.apps.conversations.ai.model }}
+    AI_MODEL: {{ .Values.apps.conversations.ai.model }}
+    {{- end }}
+    {{- if .Values.apps.conversations.ai.apiKey }}
+    AI_API_KEY: {{ .Values.apps.conversations.ai.apiKey }}
+    {{- end }}
     # Redirects
     LOGIN_REDIRECT_URL: https://conversations.{{ .Values.domain }}
     LOGIN_REDIRECT_URL_FAILURE: https://conversations.{{ .Values.domain }}

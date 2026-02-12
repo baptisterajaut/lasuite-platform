@@ -97,6 +97,12 @@ backend:
               maturity: stable
               logo: https://raw.githubusercontent.com/suitenumerique/people/main/src/frontend/apps/desk/src/assets/logo-regie.svg
             {{- end }}
+            {{- if .Values.apps.conversations.enabled }}
+            - name: Conversations
+              url: https://conversations.{{ .Values.domain }}/
+              maturity: stable
+              logo: https://lasuite.numerique.gouv.fr/assets/products/messagerie.svg
+            {{- end }}
           showMoreLimit: 9
 
   envVars:

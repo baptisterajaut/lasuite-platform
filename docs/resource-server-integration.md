@@ -145,7 +145,7 @@ Once configured, Docs can call these Drive endpoints:
 
 **BLOCKED** - Waiting for Docs implementation.
 
-**Current state (January 2025):**
+**Current state (January 2026):**
 - **Drive**: Resource Server code is complete and ready (`/external_api/v1.0/` endpoints)
 - **Docs**: Has token storage settings (`OIDC_STORE_ACCESS_TOKEN`, etc.) but **no code to call Drive**
   - No `DRIVE_API` setting exists

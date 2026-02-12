@@ -1,0 +1,48 @@
+# Configuration descriptor for https://github.com/baptisterajaut/helmfile2compose
+
+helmfile2ComposeVersion: v1
+name: lasuite
+volume_root: __VOLUME_ROOT__
+volumes:
+  minio:
+    host_path: minio
+exclude:
+- cert-manager*
+- haproxy-ingress*
+- reflector
+- minio-post-job
+replacements:
+- old: path_style_buckets = false
+  new: path_style_buckets = true
+services:
+  minio-init:
+    image: quay.io/minio/mc:latest
+    restart: on-failure
+    entrypoint:
+    - /bin/sh
+    - -c
+    command:
+    - mc alias set local http://minio:9000 $secret:minio:rootUser $secret:minio:rootPassword
+      && mc mb --ignore-existing local/docs-media-storage && mc mb --ignore-existing
+      local/drive-media-storage && mc mb --ignore-existing local/people-media-storage
+      && mc mb --ignore-existing local/conversations-media-storage
+overrides:
+  redis-master:
+    image: redis:7-alpine
+    entrypoint: null
+    command:
+    - redis-server
+    - --requirepass
+    - $secret:redis:redis-password
+    volumes:
+    - $volume_root/redis:/data
+    environment: null
+  lasuite-postgresql:
+    volumes:
+    - $volume_root/postgresql:/bitnami/postgresql
+    - ./secrets/lasuite-postgresql:/opt/bitnami/postgresql/secrets:ro
+    - ./configmaps/lasuite-postgresql-init-scripts:/docker-entrypoint-initdb.d:ro
+  livekit-livekit-server:
+    ports:
+    - 7881:7881/tcp
+    - 50000-50100:50000-50100/udp
