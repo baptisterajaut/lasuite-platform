@@ -35,7 +35,7 @@ check_template_drift() {
     fi
 }
 
-H2C_VERSION="v1.2.1"
+H2C_VERSION="v1.3.0"
 H2C_URL="https://raw.githubusercontent.com/baptisterajaut/helmfile2compose/${H2C_VERSION}/helmfile2compose.py"
 H2C_SCRIPT="$(mktemp /tmp/helmfile2compose.XXXXXX.py)"
 RENDERED_DIR="generated-platform"
