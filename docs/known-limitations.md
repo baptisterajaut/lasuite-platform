@@ -178,7 +178,7 @@ USER 1001" | nerdctl build --tag "${img}-fixed" -
 done
 ```
 
-Then create a `compose.override.yml` to use the fixed tags (see [compose deployment](deploy-compose.md)):
+Then create a `compose.override.yml` to use the fixed tags (see [compose deployment](compose-deployment.md)):
 
 ```yaml
 services:

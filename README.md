@@ -2,7 +2,7 @@
 
 Reference [Helmfile](https://github.com/helmfile/helmfile) to deploy [La Suite numerique](https://github.com/suitenumerique) on Kubernetes.
 
-> **No Kubernetes cluster?** See [Deploy with Docker Compose](docs/deploy-compose.md).
+> **No Kubernetes cluster?** See [Deploy with Docker Compose](docs/compose-deployment.md).
 
 ## Looking for Production-Ready?
 
@@ -201,7 +201,7 @@ All infrastructure is deployed automatically. For production, replace MinIO with
 
 ## Documentation
 
-- [Deploy with Docker Compose](docs/deploy-compose.md) - Run without Kubernetes using compose + Caddy
+- [Deploy with Docker Compose](docs/compose-deployment.md) - Run without Kubernetes using compose + Caddy
 - [Advanced Deployment](docs/advanced-deployment.md) - External PostgreSQL/Keycloak, production setup
 - [Architecture Decisions](docs/decisions.md) - Why things are the way they are
 - [Known Limitations](docs/known-limitations.md) - Current limitations and workarounds
