@@ -219,6 +219,12 @@ backend:
       secretKeyRef:
         name: docs-secrets
         key: COLLABORATION_SERVER_SECRET
+    # DocSpec - document conversion service (DOCX import)
+    DOCSPEC_API_URL: http://docs-docspec:4000/conversion
+
+# DocSpec
+docSpec:
+  enabled: true
 
 # Frontend
 frontend:
