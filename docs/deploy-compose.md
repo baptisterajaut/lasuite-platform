@@ -50,7 +50,14 @@ For real domains, create DNS A records pointing to the host running compose. Cad
 
 ## TLS
 
-For `.local` domains, Caddy uses its internal CA. Browsers will show a certificate warning — click through it or trust Caddy's root CA.
+For `.local` domains, Caddy uses its internal CA. Browsers will show a certificate warning. To trust the root CA:
+
+```bash
+# After first start:
+cp data/caddy/pki/authorities/local/root.crt caddy-root-ca.pem
+# macOS: sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain caddy-root-ca.pem
+# Linux: sudo cp caddy-root-ca.pem /usr/local/share/ca-certificates/caddy.crt && sudo update-ca-certificates
+```
 
 For public domains, Caddy obtains Let's Encrypt certificates automatically (requires ports 80/443 reachable from the internet).
 
