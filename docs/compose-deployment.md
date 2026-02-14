@@ -20,8 +20,8 @@ the unholy script [helmfile2compose](https://github.com/baptisterajaut/helmfile2
 ## Quick start
 
 ```bash
-git clone https://github.com/suitenumerique/suite-helmfile.git
-cd suite-helmfile
+git clone https://github.com/baptisterajaut/lasuite-platform
+cd lasuite-platform
 ./generate-compose.sh
 docker compose up -d
 ```
