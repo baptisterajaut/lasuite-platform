@@ -2,7 +2,7 @@
 
 Run La Suite without a Kubernetes cluster. The `generate-compose.sh` script
 converts the same Helmfile output into a `compose.yml` + `Caddyfile`, using
-the unholy script [helmfile2compose](https://github.com/baptisterajaut/helmfile2compose).
+the unholy script [helmfile2compose](https://helmfile2compose.github.io/).
 
 ## What you need
 
@@ -107,7 +107,7 @@ Generated from `helmfile2compose.yaml.template` on first run. Controls:
 - Custom services (MinIO bucket init)
 - String replacements
 
-For the full config file reference, see [helmfile2compose architecture](https://github.com/baptisterajaut/helmfile2compose/blob/main/docs/architecture.md#config-file-helmfile2composeyaml).
+For the full config file reference, see [helmfile2compose configuration](https://helmfile2compose.github.io/user/configuration/).
 
 ### `compose.override.yml` (optional)
 
@@ -127,6 +127,6 @@ To change the LLM config after setup, edit `environments/compose.yaml` and re-ru
 
 ## Day-to-day operations
 
-For regenerating, data management, troubleshooting, and architecture details, see the [helmfile2compose usage guide](https://github.com/baptisterajaut/helmfile2compose/blob/main/docs/usage-guide.md) and [architecture](https://github.com/baptisterajaut/helmfile2compose/blob/main/docs/architecture.md).
+For regenerating, data management, troubleshooting, and architecture details, see the [helmfile2compose operations guide](https://helmfile2compose.github.io/user/operations/) and [architecture](https://helmfile2compose.github.io/developer/architecture/).
 
-For running this stack alongside other compose projects or an existing reverse proxy, see [advanced usage](https://github.com/baptisterajaut/helmfile2compose/blob/main/docs/advanced.md).
+For running this stack alongside other compose projects or an existing reverse proxy, see [advanced usage](https://helmfile2compose.github.io/user/advanced/).
