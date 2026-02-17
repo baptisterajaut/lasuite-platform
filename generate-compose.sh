@@ -11,58 +11,16 @@ cd "$SCRIPT_DIR"
 # Reuse helpers from init.sh (generate_seed, read_seed)
 source "$SCRIPT_DIR/init.sh"
 
-TEMPLATE_CHECK=true
-for arg in "$@"; do
-    [[ "$arg" == "--no-template-check" ]] && TEMPLATE_CHECK=false
-done
-
-# Warn if a generated file has drifted from its template (line count comparison)
-check_template_drift() {
-    local generated="$1" template="$2"
-    [[ "$TEMPLATE_CHECK" == false ]] && return
-    [[ ! -f "$generated" || ! -f "$template" ]] && return
-    local gen_lines tpl_lines
-    gen_lines=$(wc -l < "$generated" | tr -d ' ')
-    tpl_lines=$(wc -l < "$template" | tr -d ' ')
-    if [[ "$gen_lines" -ne "$tpl_lines" ]]; then
-        echo ""
-        echo "⚠ Template drift: $generated ($gen_lines lines) differs from $template ($tpl_lines lines)."
-        echo "  The template may have new options since you generated your file."
-        echo "  Compare them:  diff $generated $template"
-        echo "  Use --no-template-check to suppress this warning."
-        read -rp "  Press Enter to continue..."
-        echo ""
-    fi
-}
-
-H2C_VERSION="v1.3.0"
-H2C_URL="https://raw.githubusercontent.com/helmfile2compose/h2c-core/refs/tags/${H2C_VERSION}/helmfile2compose.py"
-H2C_SCRIPT="$(mktemp /tmp/helmfile2compose.XXXXXX.py)"
-RENDERED_DIR="generated-platform"
+H2C_MANAGER_URL="https://raw.githubusercontent.com/helmfile2compose/h2c-manager/main/h2c-manager.py"
+H2C_MANAGER="$(mktemp /tmp/h2c-manager.XXXXXX.py)"
 
 # ---------------------------------------------------------------------------
-# Prerequisites
+# Download h2c-manager
 # ---------------------------------------------------------------------------
 
-echo "Checking prerequisites..."
-missing=()
-for cmd in helmfile helm python3 openssl; do
-    command -v "$cmd" &>/dev/null || missing+=("$cmd")
-done
-python3 -c "import yaml" 2>/dev/null || missing+=("pyyaml (pip install pyyaml)")
-
-if [[ ${#missing[@]} -gt 0 ]]; then
-    echo "Error: missing prerequisites: ${missing[*]}" >&2
-    exit 1
-fi
-
-# ---------------------------------------------------------------------------
-# Download helmfile2compose.py
-# ---------------------------------------------------------------------------
-
-echo "Downloading helmfile2compose.py (${H2C_VERSION})..."
-curl -fsSL "$H2C_URL" -o "$H2C_SCRIPT"
-trap 'rm -f "$H2C_SCRIPT"' EXIT
+echo "Downloading h2c-manager..."
+curl -fsSL "$H2C_MANAGER_URL" -o "$H2C_MANAGER"
+trap 'rm -f "$H2C_MANAGER"' EXIT
 
 # ---------------------------------------------------------------------------
 # Setup: environments/compose.yaml
@@ -131,8 +89,6 @@ if [[ ! -f environments/compose.yaml ]]; then
     echo "  conversations: ${CONV_ENABLED}"
     echo "  keycloak user: ${KC_USERNAME}"
     echo ""
-else
-    check_template_drift environments/compose.yaml environments/compose.yaml.template
 fi
 
 # ---------------------------------------------------------------------------
@@ -152,34 +108,24 @@ if [[ ! -f helmfile2compose.yaml ]]; then
     fi
 
     # -- Generate from template --
-    sed "s|__VOLUME_ROOT__|${DATA_ROOT}|" helmfile2compose.yaml.template > helmfile2compose.yaml
-    if [[ -n "$CADDY_EMAIL" ]]; then
-        echo "caddy_email: \"${CADDY_EMAIL}\"" >> helmfile2compose.yaml
-    fi
+    sed -e "s|__VOLUME_ROOT__|${DATA_ROOT}|" \
+        -e "s|__CADDY_EMAIL__|${CADDY_EMAIL}|" \
+        helmfile2compose.yaml.template > helmfile2compose.yaml
+    # Remove caddy_email line if no email was set
+    [[ -z "$CADDY_EMAIL" ]] && sed -i '' '/^caddy_email: ""$/d' helmfile2compose.yaml
 
     # -- Data directories --
     mkdir -p "${DATA_ROOT}"/{postgresql,redis,minio}
 
     echo ""
-else
-    check_template_drift helmfile2compose.yaml helmfile2compose.yaml.template
 fi
 
 # ---------------------------------------------------------------------------
-# Render helmfile templates
+# Generate compose.yml + Caddyfile (via h2c-manager)
 # ---------------------------------------------------------------------------
 
-echo "Rendering helmfile templates..."
-rm -rf "$RENDERED_DIR"
-helmfile -e compose template --output-dir "$RENDERED_DIR"
-
-# ---------------------------------------------------------------------------
-# Generate compose.yml + Caddyfile
-# ---------------------------------------------------------------------------
-
-echo "Generating compose.yml..."
 rm -rf configmaps/ secrets/
-python3 "$H2C_SCRIPT" --from-dir "$RENDERED_DIR" --output-dir .
+python3 "$H2C_MANAGER" run -e compose
 
 # ---------------------------------------------------------------------------
 # Summary

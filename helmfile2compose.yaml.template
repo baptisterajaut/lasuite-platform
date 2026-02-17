@@ -3,6 +3,9 @@
 helmfile2ComposeVersion: v1
 name: lasuite
 volume_root: __VOLUME_ROOT__
+caddy_email: "__CADDY_EMAIL__"
+depends:
+- flatten-internal-urls
 volumes:
   minio:
     host_path: minio
