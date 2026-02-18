@@ -182,20 +182,40 @@ Then create a `compose.override.yml` to use the fixed tags (see [compose deploym
 
 ```yaml
 services:
+  # Docs (impress)
   docs-backend:
+    image: lasuite/impress-backend:v4.5.0-fixed
+  docs-backend-createsuperuser:
+    image: lasuite/impress-backend:v4.5.0-fixed
+  docs-backend-migrate:
+    image: lasuite/impress-backend:v4.5.0-fixed
+  docs-celery-worker:
     image: lasuite/impress-backend:v4.5.0-fixed
   docs-frontend:
     image: lasuite/impress-frontend:v4.5.0-fixed
   docs-y-provider:
     image: lasuite/impress-y-provider:v4.5.0-fixed
+  # Meet
   meet-backend:
+    image: lasuite/meet-backend:v1.5.0-fixed
+  meet-backend-createsuperuser:
+    image: lasuite/meet-backend:v1.5.0-fixed
+  meet-backend-migrate:
     image: lasuite/meet-backend:v1.5.0-fixed
   meet-frontend:
     image: lasuite/meet-frontend:v1.5.0-fixed
+  # People
   people-desk-backend:
+    image: lasuite/people-backend:latest-fixed
+  people-desk-backend-migrate:
+    image: lasuite/people-backend:latest-fixed
+  people-desk-celery-beat:
+    image: lasuite/people-backend:latest-fixed
+  people-desk-celery-worker:
     image: lasuite/people-backend:latest-fixed
   people-desk-frontend:
     image: lasuite/people-frontend:latest-fixed
+  # Conversations
   conversations-backend:
     image: lasuite/conversations-backend:latest-fixed
   conversations-frontend:

@@ -6,7 +6,7 @@ the unholy script [helmfile2compose](https://helmfile2compose.github.io/).
 
 ## What you need
 
-- **Docker Compose** (v2) or **Podman Compose** (v1.0.6+). **nerdctl compose is deprecated** — h2c v2.1+ uses Docker network aliases for K8s DNS resolution, which nerdctl silently ignores. The script detects nerdctl and falls back to h2c-core v2.0.0, but newer features (inter-cluster SSL via cert-manager/trust-manager operators) will not be available. Migrate to Docker Compose for full support.
+- **Docker Compose** (v2) or **Podman Compose** (v1.0.6+). **nerdctl compose is not recommended** — nerdctl silently ignores Docker network aliases, which h2c uses for K8s DNS resolution. The `flatten-internal-urls` transform currently works around this by rewriting FQDNs to compose service names, but this is a compatibility shim that may be removed in the future. Use Docker Compose for full support.
 - [Helm](https://helm.sh/) v3 and [Helmfile](https://github.com/helmfile/helmfile) v0.150+
 - Python 3 with `pyyaml` (`pip install pyyaml`)
 - `openssl`
