@@ -6,6 +6,7 @@ volume_root: __VOLUME_ROOT__
 caddy_email: "__CADDY_EMAIL__"
 depends:
 - flatten-internal-urls
+- bitnami
 volumes:
   minio:
     host_path: minio
@@ -30,21 +31,6 @@ services:
       local/drive-media-storage && mc mb --ignore-existing local/people-media-storage
       && mc mb --ignore-existing local/conversations-media-storage
 overrides:
-  redis-master:
-    image: redis:7-alpine
-    entrypoint: null
-    command:
-    - redis-server
-    - --requirepass
-    - $secret:redis:redis-password
-    volumes:
-    - $volume_root/redis:/data
-    environment: null
-  lasuite-postgresql:
-    volumes:
-    - $volume_root/postgresql:/bitnami/postgresql
-    - ./secrets/lasuite-postgresql:/opt/bitnami/postgresql/secrets:ro
-    - ./configmaps/lasuite-postgresql-init-scripts:/docker-entrypoint-initdb.d:ro
   livekit-livekit-server:
     ports:
     - 7881:7881/tcp
