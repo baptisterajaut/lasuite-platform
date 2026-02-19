@@ -150,11 +150,30 @@ Some La Suite Docker images have two upstream issues:
 
 Affects **Kubernetes** and **nerdctl compose** on ARM64. Docker Compose is not affected (supports `platform:` per service).
 
-The `docker-hub.yml` workflow in each La Suite repo uses `docker/build-push-action@v6`, which enables buildkit provenance attestations by default. These attestations are pushed as a separate manifest entry with `unknown/unknown` platform. On ARM64 (Apple Silicon, Graviton), containerd can resolve the wrong entry and refuse to pull.
+**Root cause**: GitHub's runner images [upgraded to Docker Engine 29](https://github.com/actions/runner-images/commit/c218bde724e0ae9730d9ce101bca654a4c2e521d), which switches to the [containerd image store](https://docs.docker.com/engine/storage/containerd/) by default. This silently changed how `docker buildx build --push` works — images are now pushed as OCI manifest lists with [provenance attestation manifests](https://docs.docker.com/build/metadata/attestations/attestation-storage/) (`unknown/unknown` platform entries) instead of single-platform images. Before, a single-image manifest meant Rosetta fell back to amd64 transparently; now the OCI index triggers platform selection, the runtime finds `unknown/unknown`, and gives up. The Docker 29 [release notes](https://docs.docker.com/engine/release-notes/29/) mention the containerd switch but not this consequence. The only place describing the actual breakage is [moby/moby#51532](https://github.com/moby/moby/issues/51532).
 
-Drive 0.12.0 was fine (simple manifest v2); 0.13.0 introduced the issue by upgrading to `build-push-action@v6`. Upstream fix: disable attestations with `provenance: false` on each build-push step (or `BUILDX_NO_DEFAULT_ATTESTATIONS: 1` as workflow env).
+La Suite's `docker-hub.yml` workflows didn't change — the Docker Engine underneath them did. Drive 0.12.0 was fine (built on Docker 28, simple manifest v2); 0.13.0 was the first release built after the runner upgrade.
 
-**Affected images**:
+**Upstream fix (in progress)**: MANY thanks to [Stephan Meijer](https://github.com/StephanMeijer) who opened PRs, adding native arm64 builds across all La Suite repos, which eliminates the problem entirely — proper multi-arch manifests with real platform entries replace the broken single-arch + attestation layout:
+
+| Repo | PR |
+|------|-----|
+| calc | [#14](https://github.com/suitenumerique/calc/pull/14) |
+| containers | [#1](https://github.com/suitenumerique/containers/pull/1) |
+| conversations | [#296](https://github.com/suitenumerique/conversations/pull/296) |
+| docs | [#1901](https://github.com/suitenumerique/docs/pull/1901) |
+| drive | [#551](https://github.com/suitenumerique/drive/pull/551) |
+| e2esdk | [#1](https://github.com/suitenumerique/e2esdk/pull/1) |
+| find | [#54](https://github.com/suitenumerique/find/pull/54) |
+| meet | [#981](https://github.com/suitenumerique/meet/pull/981) |
+| meet-kyutai-moshi-stt | [#2](https://github.com/suitenumerique/meet-kyutai-moshi-stt/pull/2) |
+| meet-whisperx | [#26](https://github.com/suitenumerique/meet-whisperx/pull/26) |
+| messages | [#554](https://github.com/suitenumerique/messages/pull/554) |
+| people | [#1070](https://github.com/suitenumerique/people/pull/1070) |
+
+Until these are merged and released, the workarounds below apply.
+
+**Affected images** (current releases):
 - `lasuite/impress-backend`, `lasuite/impress-frontend`, `lasuite/impress-y-provider` (Docs)
 - `lasuite/drive-backend`, `lasuite/drive-frontend` (Drive, since v0.13.0)
 - `lasuite/meet-backend`, `lasuite/meet-frontend` (Meet)
