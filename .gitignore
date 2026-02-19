@@ -21,6 +21,8 @@ generated-platform/
 configmaps/
 secrets/
 data/
+.helmfile-rendered/
+.h2c/
 
 # Helm charts downloaded
 charts/

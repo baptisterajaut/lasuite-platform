@@ -298,16 +298,34 @@ services:
 
 #### Invalid USER directive (nerdctl only)
 
-The Docs y-provider build-args contain `DOCKER_USER=${{ env.DOCKER_USER }}:-1000` — the `:-1000` is meant as a shell default but GitHub Actions interpolates it literally, producing `USER 1001:127:-1000`. Docker ignores the invalid part, but nerdctl rejects it.
+The `docker-hub.yml` workflows use `DOCKER_USER=${{ env.DOCKER_USER }}:-1000` in build-args. The `:-1000` is meant as a shell default but GitHub Actions interpolates it literally, producing `USER 1001:127:-1000`. Docker ignores the invalid part, but nerdctl rejects it.
 
-**Affected image**: `lasuite/impress-y-provider` only.
+**Affected images** (all except Drive):
+- `lasuite/impress-backend`, `lasuite/impress-frontend`, `lasuite/impress-y-provider` (Docs) — backend+frontend fixed on main, but v4.5.0 images are affected
+- `lasuite/meet-backend`, `lasuite/meet-frontend` (Meet) — not fixed on main
+- `lasuite/people-backend`, `lasuite/people-frontend` (People) — not fixed on main
+- `lasuite/conversations-backend`, `lasuite/conversations-frontend` (Conversations) — not fixed on main
 
-**nerdctl workaround**: rebuild with a valid USER:
+**nerdctl workaround**: rebuild affected images with a valid USER:
 
 ```bash
-nerdctl pull --platform linux/amd64 lasuite/impress-y-provider:v4.5.0
-echo "FROM lasuite/impress-y-provider:v4.5.0
-USER 1001" | nerdctl build --tag lasuite/impress-y-provider:v4.5.0-fixed -
+IMAGES=(
+  lasuite/impress-backend:v4.5.0
+  lasuite/impress-frontend:v4.5.0
+  lasuite/impress-y-provider:v4.5.0
+  lasuite/meet-backend:v1.5.0
+  lasuite/meet-frontend:v1.5.0
+  lasuite/people-backend:latest
+  lasuite/people-frontend:latest
+  lasuite/conversations-backend:latest
+  lasuite/conversations-frontend:latest
+)
+
+for img in "${IMAGES[@]}"; do
+  nerdctl pull --platform linux/amd64 "$img"
+  echo "FROM $img
+USER 1001" | nerdctl build --tag "${img}-fixed" -
+done
 ```
 
 ### People (Desk) Chart Bug
