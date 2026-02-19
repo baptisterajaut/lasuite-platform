@@ -174,10 +174,6 @@ backend:
     # Disable waffle menu (see docs/known-limitations.md)
     FRONTEND_HIDE_GAUFRE: "True"
 
-  # Celery beat: write schedule to /tmp (workdir is read-only)
-  celeryBeat:
-    args: ["celery", "-A", "drive.celery_app", "beat", "-l", "INFO", "--schedule=/tmp/celerybeat-schedule"]
-
 # Frontend
 frontend:
   replicas: 1

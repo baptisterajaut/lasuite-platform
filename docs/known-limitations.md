@@ -15,7 +15,7 @@ La Suite Helm charts default to `image.tag: latest`, which is not reproducible. 
 | App | Chart Version | Image Tag | Source |
 |-----|---------------|-----------|--------|
 | Docs | 4.5.0 | v4.5.0 | Derived from `laSuiteChartVersions.docs` |
-| Drive | 0.12.0 | v0.12.0 | Derived from `laSuiteChartVersions.drive` |
+| Drive | 0.13.0 | v0.13.0 | Derived from `laSuiteChartVersions.drive` |
 | Meet | 0.0.15 | v1.5.0 | Explicit in `laSuiteImageVersions.meet` |
 | People | 0.0.7 | latest | No published version tags |
 | Conversations | 0.0.5 | latest | No published version tags |
@@ -145,24 +145,88 @@ Django app database users are created with SUPERUSER privileges. This is require
 ### Broken Docker Images (ARM64 / invalid USER)
 
 Some La Suite Docker images have two upstream issues:
-- **Broken multi-arch manifests** — declare `unknown/unknown` as platform instead of `linux/amd64`. On ARM64 (e.g., Apple Silicon), containerd refuses to pull them.
-- **Invalid USER directive** — `USER 1001:127:-1000` is not a valid UID:GID format.
+
+#### Broken multi-arch manifests (unknown/unknown)
+
+Affects **Kubernetes** and **nerdctl compose** on ARM64. Docker Compose is not affected (supports `platform:` per service).
+
+The `docker-hub.yml` workflow in each La Suite repo uses `docker/build-push-action@v6` without an explicit `platforms:` parameter. Buildkit defaults to producing a manifest index (even for a single arch), and the provenance attestation layer gets no platform metadata — hence `unknown/unknown`. On ARM64 (Apple Silicon, Graviton), containerd can resolve the wrong entry and refuse to pull.
+
+Drive 0.12.0 was fine (simple manifest v2); 0.13.0 introduced the issue by upgrading to `build-push-action@v6`. Upstream fix: add `platforms: linux/amd64` to each build-push step.
 
 **Affected images**:
 - `lasuite/impress-backend`, `lasuite/impress-frontend`, `lasuite/impress-y-provider` (Docs)
+- `lasuite/drive-backend`, `lasuite/drive-frontend` (Drive, since v0.13.0)
 - `lasuite/meet-backend`, `lasuite/meet-frontend` (Meet)
 - `lasuite/people-backend`, `lasuite/people-frontend` (People)
 - `lasuite/conversations-backend`, `lasuite/conversations-frontend` (Conversations)
 
-**Kubernetes**: No reliable workaround. `nerdctl pull --platform linux/amd64` works locally, but kubelet re-resolves the manifest index from the registry and ignores locally cached images.
+**Kubernetes**: No reliable workaround. kubelet re-resolves the manifest index from the registry every time, ignoring locally cached images.
 
-**Docker Compose / nerdctl compose**: Pull with explicit platform, rebuild with a valid USER, tag as `-fixed`:
+**Docker Compose**: Add `platform: linux/amd64` to affected services in `compose.override.yml`. No rebuild needed:
+
+```yaml
+services:
+  # Docs (impress)
+  docs-backend:
+    platform: linux/amd64
+  docs-backend-createsuperuser:
+    platform: linux/amd64
+  docs-backend-migrate:
+    platform: linux/amd64
+  docs-celery-worker:
+    platform: linux/amd64
+  docs-frontend:
+    platform: linux/amd64
+  docs-y-provider:
+    platform: linux/amd64
+  # Drive
+  drive-backend:
+    platform: linux/amd64
+  drive-backend-migrate:
+    platform: linux/amd64
+  drive-celery-worker:
+    platform: linux/amd64
+  drive-celery-beat:
+    platform: linux/amd64
+  drive-frontend:
+    platform: linux/amd64
+  # Meet
+  meet-backend:
+    platform: linux/amd64
+  meet-backend-createsuperuser:
+    platform: linux/amd64
+  meet-backend-migrate:
+    platform: linux/amd64
+  meet-frontend:
+    platform: linux/amd64
+  # People
+  people-desk-backend:
+    platform: linux/amd64
+  people-desk-backend-migrate:
+    platform: linux/amd64
+  people-desk-celery-beat:
+    platform: linux/amd64
+  people-desk-celery-worker:
+    platform: linux/amd64
+  people-desk-frontend:
+    platform: linux/amd64
+  # Conversations
+  conversations-backend:
+    platform: linux/amd64
+  conversations-frontend:
+    platform: linux/amd64
+```
+
+**nerdctl compose**: Does not support `platform:` per service. Pull with explicit platform and retag:
 
 ```bash
 IMAGES=(
   lasuite/impress-backend:v4.5.0
   lasuite/impress-frontend:v4.5.0
   lasuite/impress-y-provider:v4.5.0
+  lasuite/drive-backend:v0.13.0
+  lasuite/drive-frontend:v0.13.0
   lasuite/meet-backend:v1.5.0
   lasuite/meet-frontend:v1.5.0
   lasuite/people-backend:latest
@@ -173,12 +237,11 @@ IMAGES=(
 
 for img in "${IMAGES[@]}"; do
   nerdctl pull --platform linux/amd64 "$img"
-  echo "FROM $img
-USER 1001" | nerdctl build --tag "${img}-fixed" -
+  nerdctl tag "$img" "${img}-fixed"
 done
 ```
 
-Then create a `compose.override.yml` to use the fixed tags (see [compose deployment](compose-deployment.md)):
+Then use `-fixed` tags in `compose.override.yml`:
 
 ```yaml
 services:
@@ -195,6 +258,17 @@ services:
     image: lasuite/impress-frontend:v4.5.0-fixed
   docs-y-provider:
     image: lasuite/impress-y-provider:v4.5.0-fixed
+  # Drive
+  drive-backend:
+    image: lasuite/drive-backend:v0.13.0-fixed
+  drive-backend-migrate:
+    image: lasuite/drive-backend:v0.13.0-fixed
+  drive-celery-worker:
+    image: lasuite/drive-backend:v0.13.0-fixed
+  drive-celery-beat:
+    image: lasuite/drive-backend:v0.13.0-fixed
+  drive-frontend:
+    image: lasuite/drive-frontend:v0.13.0-fixed
   # Meet
   meet-backend:
     image: lasuite/meet-backend:v1.5.0-fixed
@@ -222,16 +296,18 @@ services:
     image: lasuite/conversations-frontend:latest-fixed
 ```
 
-### Drive Celery Beat (chart 0.12.0)
+#### Invalid USER directive (nerdctl only)
 
-The `drive` chart v0.12.0 adds a `celeryBeat` deployment but does not provide a writable volume for the `celerybeat-schedule` file. The container's working directory (`/app`) is read-only, causing a `PermissionError` crash loop.
+The Docs y-provider build-args contain `DOCKER_USER=${{ env.DOCKER_USER }}:-1000` — the `:-1000` is meant as a shell default but GitHub Actions interpolates it literally, producing `USER 1001:127:-1000`. Docker ignores the invalid part, but nerdctl rejects it.
 
-Workaround in `values/drive.yaml.gotmpl`: override the args to write the schedule to `/tmp`:
+**Affected image**: `lasuite/impress-y-provider` only.
 
-```yaml
-backend:
-  celeryBeat:
-    args: ["celery", "-A", "drive.celery_app", "beat", "-l", "INFO", "--schedule=/tmp/celerybeat-schedule"]
+**nerdctl workaround**: rebuild with a valid USER:
+
+```bash
+nerdctl pull --platform linux/amd64 lasuite/impress-y-provider:v4.5.0
+echo "FROM lasuite/impress-y-provider:v4.5.0
+USER 1001" | nerdctl build --tag lasuite/impress-y-provider:v4.5.0-fixed -
 ```
 
 ### People (Desk) Chart Bug
