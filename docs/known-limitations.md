@@ -150,9 +150,9 @@ Some La Suite Docker images have two upstream issues:
 
 Affects **Kubernetes** and **nerdctl compose** on ARM64. Docker Compose is not affected (supports `platform:` per service).
 
-The `docker-hub.yml` workflow in each La Suite repo uses `docker/build-push-action@v6` without an explicit `platforms:` parameter. Buildkit defaults to producing a manifest index (even for a single arch), and the provenance attestation layer gets no platform metadata — hence `unknown/unknown`. On ARM64 (Apple Silicon, Graviton), containerd can resolve the wrong entry and refuse to pull.
+The `docker-hub.yml` workflow in each La Suite repo uses `docker/build-push-action@v6`, which enables buildkit provenance attestations by default. These attestations are pushed as a separate manifest entry with `unknown/unknown` platform. On ARM64 (Apple Silicon, Graviton), containerd can resolve the wrong entry and refuse to pull.
 
-Drive 0.12.0 was fine (simple manifest v2); 0.13.0 introduced the issue by upgrading to `build-push-action@v6`. Upstream fix: add `platforms: linux/amd64` to each build-push step.
+Drive 0.12.0 was fine (simple manifest v2); 0.13.0 introduced the issue by upgrading to `build-push-action@v6`. Upstream fix: disable attestations with `provenance: false` on each build-push step (or `BUILDX_NO_DEFAULT_ATTESTATIONS: 1` as workflow env).
 
 **Affected images**:
 - `lasuite/impress-backend`, `lasuite/impress-frontend`, `lasuite/impress-y-provider` (Docs)
