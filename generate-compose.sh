@@ -128,17 +128,16 @@ if [[ ! -f helmfile2compose.yaml ]]; then
 
     # -- Email for Let's Encrypt (real domains only) --
     DOMAIN=$(grep '^domain:' environments/compose.yaml | awk '{print $2}')
-    CADDY_EMAIL=""
+    CADDY_EMAIL="unused@local"
     if [[ "$DOMAIN" != *.local && "$DOMAIN" != localhost ]]; then
         read -rp "Email for Let's Encrypt certificates: " CADDY_EMAIL
+        CADDY_EMAIL="${CADDY_EMAIL:-unused@local}"
     fi
 
     # -- Generate from template --
     sed -e "s|__VOLUME_ROOT__|${DATA_ROOT}|" \
         -e "s|__CADDY_EMAIL__|${CADDY_EMAIL}|" \
         helmfile2compose.yaml.template > helmfile2compose.yaml
-    # Remove caddy_email line if no email was set
-    [[ -z "$CADDY_EMAIL" ]] && sed -i '' '/^caddy_email: ""$/d' helmfile2compose.yaml
 
     # -- Data directories --
     mkdir -p "${DATA_ROOT}"/{postgresql,redis,minio}
