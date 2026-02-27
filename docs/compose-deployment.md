@@ -2,11 +2,11 @@
 
 Run La Suite without a Kubernetes cluster. The `generate-compose.sh` script
 converts the same Helmfile output into a `compose.yml` + `Caddyfile`, using
-the unholy script [helmfile2compose](https://helmfile2compose.github.io/).
+the unholy dekube distributiob [helmfile2compose](https://helmfile2compose.dekube.io/).
 
 ## What you need
 
-- **Docker Compose** (v2) or **Podman Compose** (v1.0.6+). **nerdctl compose is not recommended** — nerdctl silently ignores Docker network aliases, which h2c uses for K8s DNS resolution. The `flatten-internal-urls` transform currently works around this by rewriting FQDNs to compose service names, but this is a compatibility shim that may be removed in the future. Use Docker Compose for full support.
+- **Docker Compose** (v2) or **Podman Compose** (v1.0.6+). **nerdctl compose is not recommended** — nerdctl silently ignores Docker network aliases, which dekube uses for K8s DNS resolution. The `flatten-internal-urls` transform currently works around this by rewriting FQDNs to compose service names, but this is a compatibility shim that may be removed in the future. Use Docker Compose for full support.
 - [Helm](https://helm.sh/) v3 and [Helmfile](https://github.com/helmfile/helmfile) v0.150+
 - Python 3 with `pyyaml` (`pip install pyyaml`)
 - `openssl`
@@ -97,9 +97,9 @@ Generated from `compose.yaml.template` on first run. Controls:
 - Test user credentials
 - Secret seed
 
-### `helmfile2compose.yaml`
+### `dekube.yaml`
 
-Generated from `helmfile2compose.yaml.template` on first run. Controls:
+Generated from `dekube.yaml.template` on first run. Controls:
 - Data directory (`volume_root`)
 - Volume mappings
 - Excluded K8s-only workloads
@@ -107,7 +107,7 @@ Generated from `helmfile2compose.yaml.template` on first run. Controls:
 - Custom services (MinIO bucket init)
 - String replacements
 
-For the full config file reference, see [helmfile2compose configuration](https://helmfile2compose.github.io/user/configuration/).
+For the full config file reference, see [dekube configuration](https://helmfile2compose.dekube.io/docs/configuration/).
 
 ### `compose.override.yml` (optional)
 
@@ -127,6 +127,6 @@ To change the LLM config after setup, edit `environments/compose.yaml` and re-ru
 
 ## Day-to-day operations
 
-For regenerating, data management, troubleshooting, and architecture details, see the [helmfile2compose operations guide](https://helmfile2compose.github.io/user/operations/) and [architecture](https://helmfile2compose.github.io/developer/architecture/).
+For regenerating, data management, troubleshooting, and architecture details, see the [helmfile2compose operations guide](https://helmfile2compose.dekube.io/docs/operations/) and [architecture](https://docs.dekube.io/understand/architecture/).
 
-For running this stack alongside other compose projects or an existing reverse proxy, see [advanced usage](https://helmfile2compose.github.io/user/advanced/).
+For running this stack alongside other compose projects or an existing reverse proxy, see [advanced usage](https://helmfile2compose.dekube.io/docs/advanced/).

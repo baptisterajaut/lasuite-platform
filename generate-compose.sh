@@ -35,16 +35,16 @@ check_template_drift() {
     fi
 }
 
-H2C_MANAGER_URL="https://raw.githubusercontent.com/helmfile2compose/h2c-manager/main/h2c-manager.py"
-H2C_MANAGER="$(mktemp /tmp/h2c-manager.XXXXXX.py)"
+DEKUBE_MANAGER_URL="https://raw.githubusercontent.com/dekubeio/dekube-manager/main/dekube-manager.py"
+DEKUBE_MANAGER="$(mktemp /tmp/dekube-manager.XXXXXX.py)"
 
 # ---------------------------------------------------------------------------
-# Download h2c-manager
+# Download dekube-manager
 # ---------------------------------------------------------------------------
 
-echo "Downloading h2c-manager..."
-curl -fsSL "$H2C_MANAGER_URL" -o "$H2C_MANAGER"
-trap 'rm -f "$H2C_MANAGER"' EXIT
+echo "Downloading dekube-manager..."
+curl -fsSL "$DEKUBE_MANAGER_URL" -o "$DEKUBE_MANAGER"
+trap 'rm -f "$DEKUBE_MANAGER"' EXIT
 
 # ---------------------------------------------------------------------------
 # Setup: environments/compose.yaml
@@ -118,10 +118,16 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Setup: helmfile2compose.yaml (data root, caddy email)
+# Setup: dekube.yaml (data root, caddy email)
 # ---------------------------------------------------------------------------
 
-if [[ ! -f helmfile2compose.yaml ]]; then
+# Migrate legacy config name
+if [[ -f helmfile2compose.yaml && ! -f dekube.yaml ]]; then
+    mv helmfile2compose.yaml dekube.yaml
+    echo "Renamed helmfile2compose.yaml → dekube.yaml"
+fi
+
+if [[ ! -f dekube.yaml ]]; then
     # -- Data root --
     read -rp "Data directory [./data]: " DATA_ROOT
     DATA_ROOT="${DATA_ROOT:-./data}"
@@ -137,22 +143,22 @@ if [[ ! -f helmfile2compose.yaml ]]; then
     # -- Generate from template --
     sed -e "s|__VOLUME_ROOT__|${DATA_ROOT}|" \
         -e "s|__CADDY_EMAIL__|${CADDY_EMAIL}|" \
-        helmfile2compose.yaml.template > helmfile2compose.yaml
+        dekube.yaml.template > dekube.yaml
 
     # -- Data directories --
     mkdir -p "${DATA_ROOT}"/{postgresql,redis,minio}
 
     echo ""
 else
-    check_template_drift helmfile2compose.yaml helmfile2compose.yaml.template
+    check_template_drift dekube.yaml dekube.yaml.template
 fi
 
 # ---------------------------------------------------------------------------
-# Generate compose.yml + Caddyfile (via h2c-manager)
+# Generate compose.yml + Caddyfile (via dekube-manager)
 # ---------------------------------------------------------------------------
 
 rm -rf configmaps/ secrets/
-python3 "$H2C_MANAGER" run -e compose
+python3 "$DEKUBE_MANAGER" run -e compose
 
 # ---------------------------------------------------------------------------
 # Summary

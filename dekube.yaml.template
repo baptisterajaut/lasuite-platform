@@ -1,4 +1,4 @@
-# Configuration descriptor for https://github.com/helmfile2compose
+# Configuration descriptor for https://dekube.io
 
 name: lasuite
 volume_root: __VOLUME_ROOT__

@@ -15,13 +15,14 @@ environments/*.secret-overrides.yaml
 compose.yml*
 compose.override.yml
 Caddyfile
+dekube.yaml
 helmfile2compose.yaml
-helmfile2compose.py
 generated-platform/
 configmaps/
 secrets/
 data/
 .helmfile-rendered/
+.dekube/
 .h2c/
 
 # Helm charts downloaded
