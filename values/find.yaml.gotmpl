@@ -29,6 +29,48 @@ ingressAdmin:
 # Backend
 backend:
   replicas: 1
+  migrate:
+    command:
+      - "/bin/sh"
+      - "-c"
+      - |
+        python manage.py migrate --no-input
+
+        # Register indexation services for enabled apps
+        python manage.py shell -c "
+        from core.models import Service
+        import os
+        services = {}
+        {{- if .Values.apps.docs.enabled }}
+        svc, _ = Service.objects.update_or_create(
+            name='docs',
+            defaults={
+                'token': os.environ['FIND_SERVICE_TOKEN_DOCS'],
+                'client_id': 'docs',
+                'is_active': True,
+            },
+        )
+        services['docs'] = svc
+        print(f'Service docs: token={svc.token[:8]}...')
+        {{- end }}
+        {{- if .Values.apps.drive.enabled }}
+        svc, _ = Service.objects.update_or_create(
+            name='drive',
+            defaults={
+                'token': os.environ['FIND_SERVICE_TOKEN_DRIVE'],
+                'client_id': 'drive',
+                'is_active': True,
+            },
+        )
+        services['drive'] = svc
+        print(f'Service drive: token={svc.token[:8]}...')
+        {{- end }}
+        # Allow each service to search across all registered services
+        for svc in services.values():
+            svc.services.set(services.values())
+        print('Find services configured.')
+        "
+    restartPolicy: Never
   envVars:
     # Django admin
     DJANGO_SUPERUSER_EMAIL: {{ .Values.adminEmail }}
@@ -68,6 +110,19 @@ backend:
       secretKeyRef:
         name: find-secrets
         key: DJANGO_CELERY_BROKER_URL
+    # Find service tokens (for indexation API registration)
+    {{- if .Values.apps.docs.enabled }}
+    FIND_SERVICE_TOKEN_DOCS:
+      secretKeyRef:
+        name: find-secrets
+        key: FIND_SERVICE_TOKEN_DOCS
+    {{- end }}
+    {{- if .Values.apps.drive.enabled }}
+    FIND_SERVICE_TOKEN_DRIVE:
+      secretKeyRef:
+        name: find-secrets
+        key: FIND_SERVICE_TOKEN_DRIVE
+    {{- end }}
     # OpenSearch
     OPENSEARCH_HOST:
       configMapKeyRef:
@@ -82,7 +137,8 @@ backend:
       secretKeyRef:
         name: find-secrets
         key: OPENSEARCH_PASSWORD
-    OPENSEARCH_USE_SSL: "false"
+    OPENSEARCH_USE_SSL: "true"
+    OPENSEARCH_VERIFY_CERTS: "false"
     # Static files
     STORAGES_STATICFILES_BACKEND: django.contrib.staticfiles.storage.StaticFilesStorage
     # OIDC - Browser redirects (external)

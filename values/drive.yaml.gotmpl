@@ -173,6 +173,19 @@ backend:
     FRONTEND_SILENT_LOGIN_ENABLED: "True"
     # Disable waffle menu (see docs/known-limitations.md)
     FRONTEND_HIDE_GAUFRE: "True"
+    {{- if .Values.apps.find.enabled }}
+    # Find - search indexation
+    SEARCH_INDEXER_CLASS: core.services.search_indexers.SearchIndexer
+    SEARCH_INDEXER_COUNTDOWN: "10"
+    SEARCH_INDEXER_SECRET:
+      secretKeyRef:
+        name: drive-secrets
+        key: SEARCH_INDEXER_SECRET
+    SEARCH_INDEXER_URL: https://find.{{ .Values.domain }}/api/v1.0/documents/index/
+    SEARCH_INDEXER_QUERY_URL: https://find.{{ .Values.domain }}/api/v1.0/documents/search/
+    SEARCH_INDEXER_ALLOWED_MIMETYPES: '["text/"]'
+    SEARCH_INDEXER_UPLOAD_MAX_SIZE: "2097152"
+    {{- end }}
 
 # Frontend
 frontend:

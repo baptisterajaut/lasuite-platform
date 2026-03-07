@@ -34,9 +34,11 @@ repositories:
 # ===========================================
 # HELM DEFAULTS
 # ===========================================
+# Note: concurrency is CLI-only (not configurable here).
+# Use --concurrency 2 on constrained machines to limit parallel helm releases.
 helmDefaults:
   wait: true
-  waitForJobs: true
+  waitForJobs: false
   timeout: 600
   createNamespace: true
 

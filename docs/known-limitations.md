@@ -14,9 +14,9 @@ La Suite Helm charts default to `image.tag: latest`, which is not reproducible. 
 
 | App | Chart Version | Image Tag | Source |
 |-----|---------------|-----------|--------|
-| Docs | 4.5.0 | v4.5.0 | Derived from `laSuiteChartVersions.docs` |
-| Drive | 0.13.0 | v0.13.0 | Derived from `laSuiteChartVersions.drive` |
-| Meet | 0.0.15 | v1.5.0 | Explicit in `laSuiteImageVersions.meet` |
+| Docs | 4.6.0 | v4.6.0 | Derived from `laSuiteChartVersions.docs` |
+| Drive | 0.14.0 | v0.14.0 | Derived from `laSuiteChartVersions.drive` |
+| Meet | 0.0.16 | v1.10.0 | Explicit in `laSuiteImageVersions.meet` |
 | People | 0.0.7 | latest | No published version tags |
 | Conversations | 0.0.5 | latest | No published version tags |
 | Find | 0.0.3 | main | Published as `lasuite/find` (not `find-backend`) |
@@ -37,6 +37,8 @@ The waffle (gaufre) is the app navigation menu showing links to other La Suite a
 ### Docs
 
 Since v4.5.0, the waffle is configurable via `backend.themeCustomization`. The helmfile configures it with local URLs pointing to deployed apps.
+
+Since v4.6.0, the header icon, logo, and favicon are also part of the `themeCustomization` JSON (keys: `header.icon`, `header.logo`, `favicon.light`, `favicon.dark`). The helmfile does not override these — the defaults from the image work out of the box. For custom branding, add these keys to `file_content` in `values/docs.yaml.gotmpl`. See the upstream default: `src/backend/impress/configuration/theme/default.json`.
 
 **Note**: The `themeCustomization` JSON is cached by Django in Redis for 24h. After changing the config, either wait for cache expiry or delete the cache key manually.
 
@@ -107,6 +109,15 @@ AWS_REQUEST_CHECKSUM_CALCULATION: WHEN_REQUIRED
 AWS_RESPONSE_CHECKSUM_VALIDATION: WHEN_REQUIRED
 ```
 
+## Kubernetes 1.34+ Compatibility
+
+### Duplicate Environment Variables
+
+Kubernetes 1.34 enforces strict validation on pod specs and rejects containers with duplicate environment variable names. This affects two areas:
+
+- **Keycloak**: The `keycloakx` chart generates `KC_HTTP_ENABLED` from `proxy.enabled: true`. Do not also set it in `extraEnv` — K8s will reject the pod.
+- **People (desk)**: The chart template copies `backend.envVars` into celery worker/beat deployments. Do not redeclare these vars in `celeryWorker.envVars` or `celeryBeat.envVars` — they are inherited automatically.
+
 ## Keycloak / OIDC
 
 ### Internal vs External URLs
@@ -152,7 +163,7 @@ Affects **Kubernetes** and **nerdctl compose** on ARM64. Docker Compose is not a
 
 **Root cause**: GitHub's runner images [upgraded to Docker Engine 29](https://github.com/actions/runner-images/commit/c218bde724e0ae9730d9ce101bca654a4c2e521d), which switches to the [containerd image store](https://docs.docker.com/engine/storage/containerd/) by default. This silently changed how `docker buildx build --push` works — images are now pushed as OCI manifest lists with [provenance attestation manifests](https://docs.docker.com/build/metadata/attestations/attestation-storage/) (`unknown/unknown` platform entries) instead of single-platform images. Before, a single-image manifest meant Rosetta fell back to amd64 transparently; now the OCI index triggers platform selection, the runtime finds `unknown/unknown`, and gives up. The Docker 29 [release notes](https://docs.docker.com/engine/release-notes/29/) mention the containerd switch but not this consequence. The only place describing the actual breakage is [moby/moby#51532](https://github.com/moby/moby/issues/51532).
 
-La Suite's `docker-hub.yml` workflows didn't change — the Docker Engine underneath them did. Drive 0.12.0 was fine (built on Docker 28, simple manifest v2); 0.13.0 was the first release built after the runner upgrade.
+La Suite's `docker-hub.yml` workflows didn't change — the Docker Engine underneath them did. Drive 0.12.0 was fine (built on Docker 28, simple manifest v2); 0.13.0+ was the first release built after the runner upgrade.
 
 **Upstream fix (in progress)**: MANY thanks to [Stephan Meijer](https://github.com/StephanMeijer) who opened PRs, adding native arm64 builds across all La Suite repos, which eliminates the problem entirely — proper multi-arch manifests with real platform entries replace the broken single-arch + attestation layout:
 
@@ -241,13 +252,13 @@ services:
 
 ```bash
 IMAGES=(
-  lasuite/impress-backend:v4.5.0
-  lasuite/impress-frontend:v4.5.0
-  lasuite/impress-y-provider:v4.5.0
-  lasuite/drive-backend:v0.13.0
-  lasuite/drive-frontend:v0.13.0
-  lasuite/meet-backend:v1.5.0
-  lasuite/meet-frontend:v1.5.0
+  lasuite/impress-backend:v4.6.0
+  lasuite/impress-frontend:v4.6.0
+  lasuite/impress-y-provider:v4.6.0
+  lasuite/drive-backend:v0.14.0
+  lasuite/drive-frontend:v0.14.0
+  lasuite/meet-backend:v1.10.0
+  lasuite/meet-frontend:v1.10.0
   lasuite/people-backend:latest
   lasuite/people-frontend:latest
   lasuite/conversations-backend:latest
@@ -266,37 +277,37 @@ Then use `-fixed` tags in `compose.override.yml`:
 services:
   # Docs (impress)
   docs-backend:
-    image: lasuite/impress-backend:v4.5.0-fixed
+    image: lasuite/impress-backend:v4.6.0-fixed
   docs-backend-createsuperuser:
-    image: lasuite/impress-backend:v4.5.0-fixed
+    image: lasuite/impress-backend:v4.6.0-fixed
   docs-backend-migrate:
-    image: lasuite/impress-backend:v4.5.0-fixed
+    image: lasuite/impress-backend:v4.6.0-fixed
   docs-celery-worker:
-    image: lasuite/impress-backend:v4.5.0-fixed
+    image: lasuite/impress-backend:v4.6.0-fixed
   docs-frontend:
-    image: lasuite/impress-frontend:v4.5.0-fixed
+    image: lasuite/impress-frontend:v4.6.0-fixed
   docs-y-provider:
-    image: lasuite/impress-y-provider:v4.5.0-fixed
+    image: lasuite/impress-y-provider:v4.6.0-fixed
   # Drive
   drive-backend:
-    image: lasuite/drive-backend:v0.13.0-fixed
+    image: lasuite/drive-backend:v0.14.0-fixed
   drive-backend-migrate:
-    image: lasuite/drive-backend:v0.13.0-fixed
+    image: lasuite/drive-backend:v0.14.0-fixed
   drive-celery-worker:
-    image: lasuite/drive-backend:v0.13.0-fixed
+    image: lasuite/drive-backend:v0.14.0-fixed
   drive-celery-beat:
-    image: lasuite/drive-backend:v0.13.0-fixed
+    image: lasuite/drive-backend:v0.14.0-fixed
   drive-frontend:
-    image: lasuite/drive-frontend:v0.13.0-fixed
+    image: lasuite/drive-frontend:v0.14.0-fixed
   # Meet
   meet-backend:
-    image: lasuite/meet-backend:v1.5.0-fixed
+    image: lasuite/meet-backend:v1.10.0-fixed
   meet-backend-createsuperuser:
-    image: lasuite/meet-backend:v1.5.0-fixed
+    image: lasuite/meet-backend:v1.10.0-fixed
   meet-backend-migrate:
-    image: lasuite/meet-backend:v1.5.0-fixed
+    image: lasuite/meet-backend:v1.10.0-fixed
   meet-frontend:
-    image: lasuite/meet-frontend:v1.5.0-fixed
+    image: lasuite/meet-frontend:v1.10.0-fixed
   # People
   people-desk-backend:
     image: lasuite/people-backend:latest-fixed
@@ -320,7 +331,7 @@ services:
 The `docker-hub.yml` workflows use `DOCKER_USER=${{ env.DOCKER_USER }}:-1000` in build-args. The `:-1000` is meant as a shell default but GitHub Actions interpolates it literally, producing `USER 1001:127:-1000`. Docker ignores the invalid part, but nerdctl rejects it.
 
 **Affected images** (all except Drive):
-- `lasuite/impress-backend`, `lasuite/impress-frontend`, `lasuite/impress-y-provider` (Docs) — backend+frontend fixed on main, but v4.5.0 images are affected
+- `lasuite/impress-backend`, `lasuite/impress-frontend`, `lasuite/impress-y-provider` (Docs) — backend+frontend fixed on main, but v4.6.0 images are affected
 - `lasuite/meet-backend`, `lasuite/meet-frontend` (Meet) — not fixed on main
 - `lasuite/people-backend`, `lasuite/people-frontend` (People) — not fixed on main
 - `lasuite/conversations-backend`, `lasuite/conversations-frontend` (Conversations) — not fixed on main
@@ -329,11 +340,11 @@ The `docker-hub.yml` workflows use `DOCKER_USER=${{ env.DOCKER_USER }}:-1000` in
 
 ```bash
 IMAGES=(
-  lasuite/impress-backend:v4.5.0
-  lasuite/impress-frontend:v4.5.0
-  lasuite/impress-y-provider:v4.5.0
-  lasuite/meet-backend:v1.5.0
-  lasuite/meet-frontend:v1.5.0
+  lasuite/impress-backend:v4.6.0
+  lasuite/impress-frontend:v4.6.0
+  lasuite/impress-y-provider:v4.6.0
+  lasuite/meet-backend:v1.10.0
+  lasuite/meet-frontend:v1.10.0
   lasuite/people-backend:latest
   lasuite/people-frontend:latest
   lasuite/conversations-backend:latest
@@ -361,3 +372,37 @@ kubectl -n lasuite-people exec deploy/people-desk-backend -- \
 ### Find Image Name Mismatch
 
 The Find Helm chart defaults to `lasuite/find-backend` but the image is published as `lasuite/find` on Docker Hub. The helmfile overrides the repository in `values/find.yaml.gotmpl`. Only the `main` tag is available (no versioned tags).
+
+## Find / OpenSearch
+
+### Kubernetes Only
+
+Find requires OpenSearch and has architectural issues that limit where it can run.
+
+#### No internal HTTP backchannel
+
+Find's Django `Production` class hardcodes `SECURE_SSL_REDIRECT = True` as a plain class attribute (not a `values.Value()`), making it impossible to override via environment variable. This 301-redirects all internal HTTP POST requests to HTTPS. Since no La Suite chart serves HTTPS between pods (TLS termination at ingress only), the indexation URLs for Docs and Drive must go through the external ingress (`https://find.{domain}/...`).
+
+This works in production (real DNS), but means:
+- Pods must resolve the external domain — requires proper DNS, not just `/etc/hosts`
+- Compose/dekube environments cannot use Find (flatten-urls rewrites SANs, no ingress, no TLS)
+
+**Upstream fix**: `SECURE_SSL_REDIRECT` and `SECURE_REDIRECT_EXEMPT` should be `values.BooleanValue()` / `values.ListValue()` like the rest of Find's settings, allowing env var override.
+
+#### OpenSearch resource requirements
+
+OpenSearch requires significant resources (JVM heap, mmap `vm.max_map_count`) and has compatibility issues with nerdctl (security plugin bootstrap, sysctl requirements).
+
+#### Experimental status
+
+Find is still early-stage. It is disabled by default (`apps.find.enabled: false` in `_defaults.yaml`). Do not enable it in compose environments or without a real Kubernetes cluster with proper DNS.
+
+### Migrate Job Must Be Deleted Before Upgrade
+
+Kubernetes Jobs have immutable `spec.template`. The Find chart names its migrate Job `find-backend-migrate-{chartVersion}`. Since the chart version barely moves (`0.0.3` for months), any change to the Job spec (env vars, command, image) will fail with `field is immutable`. You must delete the Job manually before every `helmfile sync` that touches Find:
+
+```bash
+kubectl -n lasuite-find delete job find-backend-migrate-0.0.3
+```
+
+This also interacts badly with `helmDefaults.waitForJobs: true` — the Job has `ttlSecondsAfterFinished: 30`, so Helm's `--wait-for-jobs` may find the Job already garbage-collected and fail. We set `waitForJobs: false` globally to avoid this.

@@ -16,6 +16,18 @@ ingress:
     enabled: true
     secretName: meet-tls
 
+# Webhook Ingress (LiveKit → Meet notifications)
+# Separate ingress for /api/v1.0/rooms/webhooks-livekit/ to allow
+# production hardening (e.g. source IP restriction to LiveKit only)
+ingressWebhook:
+  enabled: true
+  className: {{ .Values.ingress.className }}
+  host: meet.{{ .Values.domain }}
+  annotations:
+    cert-manager.io/cluster-issuer: {{ .Values.tls.issuer }}
+  tls:
+    enabled: false
+
 # Admin Ingress
 # Note: meet chart has a bug - it merges main ingress TLS into admin ingress
 # Workaround: disable TLS on admin ingress, main ingress TLS covers it

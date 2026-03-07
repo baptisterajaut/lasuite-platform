@@ -62,6 +62,9 @@ opensearch:
   host: {{ .Values.opensearch.host | quote }}
   port: {{ .Values.opensearch.port }}
 
+livekit:
+  enabled: {{ .Values.livekit.enabled }}
+
 tls:
   issuer: {{ .Values.tls.issuer | quote }}
 {{- if eq .Values.tls.issuer "letsencrypt" }}

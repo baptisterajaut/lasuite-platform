@@ -149,7 +149,7 @@ case ${CHOICE} in
         read -rp "Press Enter to run helmfile sync..."
 
         cd "${SCRIPT_DIR}"
-        helmfile -e local sync
+        helmfile -e local sync --concurrency 2
 
         post_deploy "${SEED}"
         ;;

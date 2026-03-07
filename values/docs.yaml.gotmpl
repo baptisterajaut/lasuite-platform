@@ -71,6 +71,18 @@ backend:
   themeCustomization:
     enabled: true
     file_content:
+      header:
+        icon:
+          src: /assets/icon-docs.svg
+          alt: Docs
+          withTitle: true
+      favicon:
+        light:
+          href: /assets/favicon-light.png
+          type: image/png
+        dark:
+          href: /assets/favicon-dark.png
+          type: image/png
       waffle:
         widgetPath: https://static.suite.anct.gouv.fr/widgets/lagaufre.js
         data:
@@ -221,6 +233,17 @@ backend:
         key: COLLABORATION_SERVER_SECRET
     # DocSpec - document conversion service (DOCX import)
     DOCSPEC_API_URL: http://docs-docspec:4000/conversion
+    {{- if .Values.apps.find.enabled }}
+    # Find - search indexation
+    SEARCH_INDEXER_CLASS: core.services.search_indexers.FindDocumentIndexer
+    SEARCH_INDEXER_COUNTDOWN: "10"
+    SEARCH_INDEXER_SECRET:
+      secretKeyRef:
+        name: docs-secrets
+        key: SEARCH_INDEXER_SECRET
+    SEARCH_INDEXER_URL: https://find.{{ .Values.domain }}/api/v1.0/documents/index/
+    SEARCH_INDEXER_QUERY_URL: https://find.{{ .Values.domain }}/api/v1.0/documents/search/
+    {{- end }}
 
 # DocSpec
 docSpec:

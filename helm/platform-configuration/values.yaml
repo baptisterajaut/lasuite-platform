@@ -36,6 +36,10 @@ opensearch:
   host: opensearch-cluster-master.lasuite-opensearch.svc.cluster.local
   port: 9200
 
+# LiveKit configuration
+livekit:
+  enabled: false
+
 # TLS configuration
 tls:
   issuer: selfsigned  # selfsigned | letsencrypt
