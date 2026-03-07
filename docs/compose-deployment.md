@@ -2,7 +2,7 @@
 
 Run La Suite without a Kubernetes cluster. The `generate-compose.sh` script
 converts the same Helmfile output into a `compose.yml` + `Caddyfile`, using
-the unholy dekube distributiob [helmfile2compose](https://helmfile2compose.dekube.io/).
+the unholy dekube distribution [helmfile2compose](https://helmfile2compose.dekube.io/).
 
 ## What you need
 
@@ -130,3 +130,13 @@ To change the LLM config after setup, edit `environments/compose.yaml` and re-ru
 For regenerating, data management, troubleshooting, and architecture details, see the [helmfile2compose operations guide](https://helmfile2compose.dekube.io/docs/operations/) and [architecture](https://docs.dekube.io/understand/architecture/).
 
 For running this stack alongside other compose projects or an existing reverse proxy, see [advanced usage](https://helmfile2compose.dekube.io/docs/advanced/).
+
+## Limitations
+
+### Find not available in compose
+
+Find deploys and starts, but **indexation does not work**. Find requires HTTPS to connect to OpenSearch. This project uses the [`flatten-internal-urls`](https://github.com/dekubeio/dekube-transform-flatten-internal-urls) transform, which rewrites Kubernetes FQDNs to compose service names — the internal TLS certificates' SANs no longer match the rewritten hostnames. When Docs or Drive push content to Find for indexing, Find will 400 or timeout because it fails the TLS handshake with OpenSearch (SAN mismatch).
+
+In practice, if you needed the indexation power of OpenSearch and Find in compose instead of deploying on Kubernetes, something has gone wrong. This is documented for completeness — it limits no one.
+
+See [known limitations](known-limitations.md#find--opensearch) for general Find/OpenSearch notes (resource requirements, experimental status).

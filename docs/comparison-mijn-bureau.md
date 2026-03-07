@@ -102,6 +102,7 @@ helmfile.yaml.gotmpl
 | Drive | Yes | Yes |
 | People | Yes | No |
 | Conversations | Yes | Yes |
+| Find | Yes | No |
 | **Nextcloud** | No | Yes |
 | **Element/Matrix** | No | Yes |
 | **Collabora** | No | Yes |

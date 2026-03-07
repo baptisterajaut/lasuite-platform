@@ -375,27 +375,26 @@ The Find Helm chart defaults to `lasuite/find-backend` but the image is publishe
 
 ## Find / OpenSearch
 
-### Kubernetes Only
+### Indexation requires external URL (SECURE_SSL_REDIRECT)
 
-Find requires OpenSearch and has architectural issues that limit where it can run.
+Find deploys and runs fine everywhere. The problem is **indexation** — Docs and Drive push content to Find for search.
 
-#### No internal HTTP backchannel
+Find's Django `Production` class hardcodes `SECURE_SSL_REDIRECT = True` as a plain class attribute (not a `values.Value()`), making it impossible to override via environment variable. This 301-redirects all HTTP requests to HTTPS. Since TLS terminates at ingress (no HTTPS between pods), Docs and Drive cannot use the internal K8s service URL (`http://find-backend.lasuite-find.svc.cluster.local/...`) — Find rejects it. They must go through the external ingress URL (`https://find.{domain}/...`) instead.
 
-Find's Django `Production` class hardcodes `SECURE_SSL_REDIRECT = True` as a plain class attribute (not a `values.Value()`), making it impossible to override via environment variable. This 301-redirects all internal HTTP POST requests to HTTPS. Since no La Suite chart serves HTTPS between pods (TLS termination at ingress only), the indexation URLs for Docs and Drive must go through the external ingress (`https://find.{domain}/...`).
-
-This works in production (real DNS), but means:
-- Pods must resolve the external domain — requires proper DNS, not just `/etc/hosts`
-- Compose/dekube environments cannot use Find (flatten-urls rewrites SANs, no ingress, no TLS)
+This means:
+- **Production with real DNS**: works — pods resolve the external domain, ingress terminates TLS, Find receives the request over HTTP internally.
+- **K8s local dev** (`/etc/hosts`): fails — pods cannot resolve the external domain since `/etc/hosts` is host-only.
+- **Compose**: fails for a different reason — see [compose limitations](compose-deployment.md#find-not-available-in-compose).
 
 **Upstream fix**: `SECURE_SSL_REDIRECT` and `SECURE_REDIRECT_EXEMPT` should be `values.BooleanValue()` / `values.ListValue()` like the rest of Find's settings, allowing env var override.
 
-#### OpenSearch resource requirements
+### OpenSearch resource requirements
 
 OpenSearch requires significant resources (JVM heap, mmap `vm.max_map_count`) and has compatibility issues with nerdctl (security plugin bootstrap, sysctl requirements).
 
-#### Experimental status
+### Experimental status
 
-Find is still early-stage. It is disabled by default (`apps.find.enabled: false` in `_defaults.yaml`). Do not enable it in compose environments or without a real Kubernetes cluster with proper DNS.
+Find is still early-stage. It is disabled by default (`apps.find.enabled: false` in `_defaults.yaml`). Indexation (Docs/Drive integration) requires a cluster with real DNS resolution.
 
 ### Migrate Job Must Be Deleted Before Upgrade
 
