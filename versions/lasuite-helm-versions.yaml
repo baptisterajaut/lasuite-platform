@@ -1,8 +1,8 @@
 # La Suite numerique chart versions
 laSuiteChartVersions:
-  docs: "4.6.0"
-  meet: "0.0.16"
-  drive: "0.14.0"
+  docs: "4.8.5"
+  meet: "0.0.18"
+  drive: "0.15.0"
   people: "0.0.7"
   conversations: "0.0.5"
   find: "0.0.3"
@@ -12,4 +12,4 @@ laSuiteChartVersions:
 # Only specify here when chart version and image version differ.
 # See docs/known-limitations.md for details.
 laSuiteImageVersions:
-  meet: "v1.10.0"  # Meet chart 0.0.x does not match app version v1.x
+  meet: "v1.13.0"  # Meet chart 0.0.x does not match app version v1.x
