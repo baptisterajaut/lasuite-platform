@@ -1,16 +1,16 @@
 # Backend/infrastructure chart versions
 backendChartVersions:
   # Bitnami
-  postgresql: "18.5.15"
-  redis: "25.3.9"
+  postgresql: "18.7.2"
+  redis: "27.0.4"
   # Others
-  keycloak: "7.1.9"
+  keycloak: "7.2.0"
   minio: "5.4.0"
-  opensearch: "3.5.0"
+  opensearch: "3.6.0"
 
   # Infrastructure
-  certManager: "1.20.1"
-  trustManager: "0.22.0"  # Reserved for future internal TLS (not deployed yet)
-  haproxy: "1.49.0"
-  reflector: "10.0.27"
+  certManager: "1.20.2"
+  trustManager: "0.22.1"  # Reserved for future internal TLS (not deployed yet)
+  haproxy: "1.52.0"
+  reflector: "10.0.48"
   livekit: "1.9.0"

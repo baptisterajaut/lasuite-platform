@@ -182,6 +182,9 @@ celeryTranscribe:
 celerySummarize:
   replicas: 0
 
-# Agents - disabled
-agents:
+# Agents - disabled (chart 0.0.2x split `agents` into agentSubtitles + agentMetadata, both default replicas: 1)
+agentSubtitles:
+  replicas: 0
+
+agentMetadata:
   replicas: 0

@@ -14,9 +14,9 @@ La Suite Helm charts default to `image.tag: latest`, which is not reproducible. 
 
 | App | Chart Version | Image Tag | Source |
 |-----|---------------|-----------|--------|
-| Docs | 4.6.0 | v4.6.0 | Derived from `laSuiteChartVersions.docs` |
-| Drive | 0.14.0 | v0.14.0 | Derived from `laSuiteChartVersions.drive` |
-| Meet | 0.0.16 | v1.10.0 | Explicit in `laSuiteImageVersions.meet` |
+| Docs | 5.2.1 | v5.2.1 | Derived from `laSuiteChartVersions.docs` |
+| Drive | 0.18.0 | v0.18.0 | Derived from `laSuiteChartVersions.drive` |
+| Meet | 0.0.23 | v1.19.0 | Explicit in `laSuiteImageVersions.meet` |
 | People | 0.0.7 | latest | No published version tags |
 | Conversations | 0.0.5 | latest | No published version tags |
 | Find | 0.0.3 | main | Published as `lasuite/find` (not `find-backend`) |
@@ -29,6 +29,16 @@ When updating Meet:
 1. Check latest chart version: `helm search repo meet/meet --versions`
 2. Check latest image tag: https://hub.docker.com/r/lasuite/meet-backend/tags
 3. Update both `laSuiteChartVersions.meet` and `laSuiteImageVersions.meet` in `versions/lasuite-helm-versions.yaml`
+
+### Bitnami images pinned to `latest`
+
+PostgreSQL and Redis use the Bitnami charts' default image, which resolves to `docker.io/bitnami/{postgresql,redis}:latest`. This is not a deliberate choice: since the August 2025 catalog change, Bitnami's free tier only publishes `latest`. All versioned tags moved to the frozen `docker.io/bitnamilegacy` repo, and the maintained versioned catalog now requires the paid Bitnami Secure Images subscription. So it's `latest` or nothing without paying.
+
+`latest` still pulls anonymously, so nothing is broken — but it is a moving, unpinned target, unlike every other image in this deployment.
+
+**Footgun**: `latest` on a *stateful* PostgreSQL means a future major-version bump in `latest` can leave a restarting pod unable to start on an existing data directory (PostgreSQL refuses to start on a `PGDATA` from a different major version). Redis is only used as a cache/broker, so it is unaffected.
+
+The intended long-term fix is to drop Bitnami entirely (e.g. PostgreSQL → CloudNativePG, Redis → official image or Valkey). Held off for now because this repo doubles as a dekube/compose source, where operators and CRDs transpile poorly.
 
 ## Waffle/Gaufre Menu
 
