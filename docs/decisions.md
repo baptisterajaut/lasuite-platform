@@ -191,7 +191,9 @@ Meet has built-in AI features for transcribing and summarizing meetings. These a
 To enable AI features, you would need to:
 1. Deploy a transcription service (e.g., Whisper)
 2. Deploy an LLM for summarization
-3. Configure `summary.replicas`, `celeryTranscribe.replicas`, `celerySummarize.replicas` in Meet values
+3. Configure `summary.replicas`, `celeryTranscribe.instances`, `celerySummarize.replicas` in Meet values
+
+Newer Meet charts (`0.0.2x`) also split the realtime agents into two deployments, `agentSubtitles` (live subtitles) and `agentMetadata` (VAD/metadata collection), both relying on **Deepgram** speech-to-text (an external, paid API). We keep both at `replicas: 0` for the same reason as above — no external API keys shipped. The self-hostable path is the WhisperX `celeryTranscribe.instances`, which needs GPU.
 
 ### Meet: recording
 
@@ -221,6 +223,20 @@ People is **disabled by default** because:
 - **Optional for basic deployments** - Keycloak already handles authentication
 - **Useful for multi-tenant setups** - Adds value when managing multiple teams/organizations
 - **Early stage** - Chart (`desk`) is still v0.0.7
+
+### Docs: AI assistant
+
+Docs (v5.x) ships an AI assistant backed by the **Mistral** SDK. It is **not wired** because it needs an external Mistral API key (per-token cost). Same rationale as the Conversations LLM backend — we cannot ship keys, and it adds an external paid dependency that does not belong in a reference deployment. Enable it by configuring the relevant `AI_*` backend env vars in the Docs values if you have a provider.
+
+### Opt-in scaling/integration knobs (left at defaults)
+
+A handful of optional chart features exist but stay off because they are scaling or integration concerns, not capabilities a reference deployment needs:
+
+- **Docs `yProvider.converter`** - a dedicated converter deployment (default 3 replicas) that offloads document conversion at scale. The bundled `docSpec` service already handles DOCX conversion for our purposes.
+- **Meet `mergeDuplicateUsers` job, `frontend.outlookAddon`** - org-specific user reconciliation and an Outlook add-in; not relevant to a generic deployment.
+- **Drive** - `DJANGO_EMAIL_URL_APP`, configurable invitation validity, and extra CSRF origins are available as env vars; wire them only if a concrete need arises.
+
+These are documented here so their existence is discoverable; enabling any of them is a per-deployment decision, not a default.
 
 ## Infrastructure choices
 
